@@ -3,225 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colosy — P&L Dashboard</title>
+  <title>P&L Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0f2f8;--surface:#fff;--surface2:#f8f9fc;--border:#e4e7f0;
+      --text:#0d1117;--text2:#5a6278;--text3:#9aa0b4;
+      --accent:#4f46e5;--accent2:#7c3aed;--accent-light:#eef2ff;--accent-border:#c7d2fe;
+      --green:#059669;--green-light:#d1fae5;--red:#dc2626;--red-light:#fee2e2;
+      --amber:#d97706;--amber-light:#fef3c7;--blue:#2563eb;--blue-light:#dbeafe;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+    }
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .layout{max-width:1400px;margin:0 auto;padding:24px 24px 48px}
 
-    :root {
-      --bg: #f0f2f8;
-      --surface: #ffffff;
-      --surface2: #f8f9fc;
-      --border: #e4e7f0;
-      --text: #0d1117;
-      --text2: #5a6278;
-      --text3: #9aa0b4;
-      --indigo: #4f46e5;
-      --indigo-light: #eef2ff;
-      --green: #059669;
-      --green-light: #d1fae5;
-      --red: #dc2626;
-      --red-light: #fee2e2;
-      --amber: #d97706;
-      --amber-light: #fef3c7;
-      --blue: #2563eb;
-      --blue-light: #dbeafe;
-      --purple: #7c3aed;
-      --purple-light: #ede9fe;
-      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
-      --shadow-lg: 0 4px 12px rgba(0,0,0,.08), 0 12px 40px rgba(0,0,0,.06);
+    /* Store switcher */
+    .store-bar{display:flex;justify-content:center;margin-bottom:20px}
+    .store-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;box-shadow:var(--shadow)}
+    .store-btn{
+      padding:7px 22px;font-size:13px;font-weight:600;border-radius:7px;border:none;
+      background:transparent;color:var(--text2);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:7px
     }
+    .store-btn .s-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5;transition:opacity .18s}
+    .store-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+    .store-btn.active .s-dot{opacity:1}
+    .store-btn.active.renazi-active{background:var(--green);box-shadow:0 2px 8px rgba(5,150,105,.3)}
 
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+    .header-left{display:flex;align-items:center;gap:14px}
+    .logo{
+      width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+      font-size:18px;font-weight:700;color:#fff;letter-spacing:-.5px;flex-shrink:0;
+      background:linear-gradient(135deg,#4f46e5,#7c3aed);transition:background .3s
     }
+    .logo.renazi{background:linear-gradient(135deg,#059669,#0891b2)}
+    .header-title h1{font-size:18px;font-weight:600;letter-spacing:-.3px}
+    .header-title p{font-size:12.5px;color:var(--text2);margin-top:1px}
+    .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .badge{font-size:11.5px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
+    .badge.fx{background:var(--accent-light);color:var(--accent);border-color:var(--accent-border)}
+    .badge.fx.renazi{background:var(--green-light);color:var(--green);border-color:#a7f3d0}
 
-    .layout { max-width: 1400px; margin: 0 auto; padding: 28px 24px 48px; }
+    /* KPIs */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:22px}
+    .kpi-card{background:var(--surface);border-radius:14px;padding:18px 20px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+    .c-indigo::before{background:linear-gradient(90deg,#4f46e5,#7c3aed)}
+    .c-green::before{background:linear-gradient(90deg,#059669,#10b981)}
+    .c-blue::before{background:linear-gradient(90deg,#2563eb,#38bdf8)}
+    .c-amber::before{background:linear-gradient(90deg,#d97706,#f59e0b)}
+    .c-purple::before{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+    .c-teal::before{background:linear-gradient(90deg,#0891b2,#06b6d4)}
+    .kpi-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+    .kpi-value{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
+    .kpi-sub{font-size:11.5px;color:var(--text2);margin-top:6px}
+    .kpi-pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;margin-top:6px}
+    .pill-green{background:var(--green-light);color:var(--green)}
+    .pill-amber{background:var(--amber-light);color:var(--amber)}
+    .pill-red{background:var(--red-light);color:var(--red)}
 
-    /* ── Header ── */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
-    }
-    .header-left { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      width: 38px; height: 38px; border-radius: 10px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.5px;
-    }
-    .header-title h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-    .header-title p { font-size: 12.5px; color: var(--text2); margin-top: 1px; }
-    .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .badge {
-      font-size: 11.5px; font-weight: 500; padding: 4px 10px;
-      border-radius: 6px; border: 1px solid var(--border);
-      background: var(--surface); color: var(--text2);
-    }
-    .badge.fx { background: var(--indigo-light); color: var(--indigo); border-color: #c7d2fe; }
+    /* Charts */
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+    .chart-grid-3{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:20px}
+    .chart-card{background:var(--surface);border-radius:14px;padding:20px 22px;border:1px solid var(--border);box-shadow:var(--shadow)}
+    .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px}
+    .chart-title{font-size:13px;font-weight:600}
+    .chart-sub{font-size:11.5px;color:var(--text2);margin-top:2px}
+    .chart-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:2px}
+    .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+    .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    canvas{max-height:280px}
 
-    /* ── KPI Cards ── */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px; margin-bottom: 24px;
-    }
-    .kpi-card {
-      background: var(--surface); border-radius: 14px; padding: 18px 20px;
-      border: 1px solid var(--border); box-shadow: var(--shadow);
-      position: relative; overflow: hidden;
-    }
-    .kpi-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      border-radius: 14px 14px 0 0;
-    }
-    .kpi-card.c-indigo::before { background: linear-gradient(90deg, #4f46e5, #7c3aed); }
-    .kpi-card.c-green::before  { background: linear-gradient(90deg, #059669, #10b981); }
-    .kpi-card.c-blue::before   { background: linear-gradient(90deg, #2563eb, #38bdf8); }
-    .kpi-card.c-amber::before  { background: linear-gradient(90deg, #d97706, #f59e0b); }
-    .kpi-card.c-purple::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-    .kpi-card.c-red::before    { background: linear-gradient(90deg, #dc2626, #f87171); }
+    /* Table */
+    .table-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+    .table-header{padding:16px 22px 12px;border-bottom:1px solid var(--border)}
+    .tscroll{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
+    thead{background:var(--surface2)}
+    th{font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    th:first-child{text-align:left}
+    td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+    td:first-child{text-align:left;font-weight:500}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:var(--surface2)}
+    .tr-total td{font-weight:600;background:var(--surface2);border-top:2px solid var(--border)}
+    .tr-total:hover td{background:#eef0f8}
+    .tpill{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:99px}
+    .tp-green{background:var(--green-light);color:var(--green)}
+    .tp-amber{background:var(--amber-light);color:var(--amber)}
+    .tp-red{background:var(--red-light);color:var(--red)}
+    .tv-pos{color:var(--green);font-weight:600}
+    .tv-neg{color:var(--red);font-weight:600}
+    .tv-muted{color:var(--text3)}
+    .pdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;flex-shrink:0}
+    .nosales-tag{font-size:9.5px;color:var(--text3);margin-left:5px}
 
-    .kpi-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
-    .kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
-    .kpi-sub { font-size: 11.5px; color: var(--text2); margin-top: 6px; }
-    .kpi-pill {
-      display: inline-block; font-size: 11px; font-weight: 600;
-      padding: 2px 7px; border-radius: 99px; margin-top: 6px;
-    }
-    .pill-green { background: var(--green-light); color: var(--green); }
-    .pill-amber { background: var(--amber-light); color: var(--amber); }
-    .pill-red   { background: var(--red-light); color: var(--red); }
+    .footer{margin-top:28px;text-align:center;font-size:11px;color:var(--text3)}
 
-    /* ── Chart Grid ── */
-    .chart-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px; margin-bottom: 24px;
-    }
-    .chart-grid-3 {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr;
-      gap: 14px; margin-bottom: 24px;
-    }
-    .chart-card {
-      background: var(--surface); border-radius: 14px; padding: 22px 24px;
-      border: 1px solid var(--border); box-shadow: var(--shadow);
-    }
-    .chart-card.full { grid-column: 1 / -1; }
-    .chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 8px; }
-    .chart-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
-    .chart-sub { font-size: 11.5px; color: var(--text2); margin-top: 2px; }
-    .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
-    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
-    .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    canvas { max-height: 300px; }
-
-    /* ── Waterfall ── */
-    .waterfall-wrap { overflow-x: auto; }
-    .waterfall {
-      display: flex; align-items: flex-end; gap: 4px;
-      height: 180px; padding: 0 4px; min-width: 440px;
-    }
-    .wf-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .wf-bar-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 160px; }
-    .wf-bar {
-      width: 70%; border-radius: 5px 5px 0 0;
-      transition: opacity .15s;
-      min-height: 4px;
-    }
-    .wf-bar.pos { background: var(--green); }
-    .wf-bar.neg { background: var(--red); }
-    .wf-bar.neutral { background: var(--indigo); }
-    .wf-label { font-size: 9.5px; color: var(--text2); text-align: center; line-height: 1.3; white-space: nowrap; }
-    .wf-value { font-size: 10px; font-weight: 600; color: var(--text); text-align: center; white-space: nowrap; }
-
-    /* ── Table ── */
-    .table-card {
-      background: var(--surface); border-radius: 14px;
-      border: 1px solid var(--border); box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .table-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .table-header .chart-title { font-size: 13.5px; }
-    .tscroll { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 860px; }
-    thead { background: var(--surface2); }
-    th {
-      font-size: 10.5px; font-weight: 600; color: var(--text3);
-      text-transform: uppercase; letter-spacing: .5px;
-      padding: 10px 14px; text-align: right; white-space: nowrap;
-      border-bottom: 1px solid var(--border);
-    }
-    th:first-child { text-align: left; }
-    td {
-      padding: 10px 14px; text-align: right;
-      border-bottom: 1px solid var(--border);
-      color: var(--text); white-space: nowrap;
-    }
-    td:first-child { text-align: left; font-weight: 500; }
-    tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: var(--surface2); }
-    .tr-total td { font-weight: 600; background: var(--surface2); border-top: 2px solid var(--border); }
-    .tr-total:hover td { background: #eef0f8; }
-
-    .tpill {
-      display: inline-block; font-size: 10.5px; font-weight: 600;
-      padding: 2px 7px; border-radius: 99px;
-    }
-    .tp-green { background: var(--green-light); color: var(--green); }
-    .tp-amber { background: var(--amber-light); color: var(--amber); }
-    .tp-red   { background: var(--red-light); color: var(--red); }
-    .tv-pos   { color: var(--green); font-weight: 600; }
-    .tv-neg   { color: var(--red); font-weight: 600; }
-    .tv-muted { color: var(--text3); }
-
-    .product-dot {
-      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-      margin-right: 7px; flex-shrink: 0;
-    }
-    .row-nosales td:first-child { color: var(--text3); }
-    .nosales-tag { font-size: 9.5px; color: var(--text3); margin-left: 5px; }
-
-    /* ── Footer ── */
-    .footer {
-      margin-top: 32px; text-align: center;
-      font-size: 11px; color: var(--text3);
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 900px) {
-      .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 600px) {
-      .layout { padding: 16px 12px 32px; }
-      .kpi-value { font-size: 22px; }
-    }
+    @media(max-width:900px){.chart-grid,.chart-grid-3{grid-template-columns:1fr}}
+    @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:22px}}
   </style>
 </head>
 <body>
 <div class="layout">
 
+  <!-- Store Switcher -->
+  <div class="store-bar">
+    <div class="store-toggle">
+      <button class="store-btn active" id="btn-colosy" onclick="switchStore('colosy')">
+        <span class="s-dot"></span>Colosy
+      </button>
+      <button class="store-btn" id="btn-renazi" onclick="switchStore('renazi')">
+        <span class="s-dot"></span>Renazi
+      </button>
+    </div>
+  </div>
+
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="logo">C</div>
+      <div class="logo" id="hdr-logo">C</div>
       <div class="header-title">
-        <h1>Colosy — P&amp;L Dashboard</h1>
-        <p>Visão geral de produtos · 15 abr – 3 mai 2026</p>
+        <h1 id="hdr-title">Colosy — P&amp;L Dashboard</h1>
+        <p id="hdr-sub">Visão geral de produtos · 15 abr – 3 mai 2026</p>
       </div>
     </div>
-    <div class="header-right">
-      <span class="badge">338 pedidos</span>
-      <span class="badge">22 produtos ativos</span>
-      <span class="badge fx">1 USD = €0.8555</span>
-    </div>
+    <div class="header-right" id="hdr-badges"></div>
   </div>
 
   <!-- KPI Cards -->
@@ -231,10 +143,7 @@
   <div class="chart-grid">
     <div class="chart-card">
       <div class="chart-header">
-        <div>
-          <div class="chart-title">Receita vs Lucro líquido por produto</div>
-          <div class="chart-sub">Top 10 produtos com vendas</div>
-        </div>
+        <div><div class="chart-title">Receita vs Lucro líquido</div><div class="chart-sub">Top 10 produtos com vendas</div></div>
         <div class="chart-legend">
           <div class="leg-item"><div class="leg-dot" style="background:#4f46e5"></div>Receita</div>
           <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Lucro líq.</div>
@@ -244,10 +153,7 @@
     </div>
     <div class="chart-card">
       <div class="chart-header">
-        <div>
-          <div class="chart-title">Margem líquida por produto</div>
-          <div class="chart-sub">Produtos com vendas</div>
-        </div>
+        <div><div class="chart-title">Margem líquida por produto</div><div class="chart-sub">Produtos com vendas</div></div>
       </div>
       <canvas id="chart-margins"></canvas>
     </div>
@@ -257,23 +163,17 @@
   <div class="chart-grid-3">
     <div class="chart-card">
       <div class="chart-header">
-        <div>
-          <div class="chart-title">Distribuição do gasto em Ads</div>
-          <div class="chart-sub">Google + Facebook · top produtos</div>
-        </div>
-        <div class="chart-legend">
+        <div><div class="chart-title">Gasto em Ads por produto</div><div class="chart-sub" id="ads-sub">Google + Facebook · top produtos</div></div>
+        <div class="chart-legend" id="ads-legend">
           <div class="leg-item"><div class="leg-dot" style="background:#4f46e5"></div>Google Ads</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Facebook Ads</div>
+          <div class="leg-item" id="fb-legend-item"><div class="leg-dot" style="background:#7c3aed"></div>Facebook Ads</div>
         </div>
       </div>
       <canvas id="chart-ads"></canvas>
     </div>
     <div class="chart-card">
       <div class="chart-header">
-        <div>
-          <div class="chart-title">Cascata P&amp;L</div>
-          <div class="chart-sub">Receita → Lucro líquido</div>
-        </div>
+        <div><div class="chart-title">Cascata P&amp;L</div><div class="chart-sub">Receita → Lucro líquido</div></div>
       </div>
       <canvas id="chart-waterfall"></canvas>
     </div>
@@ -282,28 +182,18 @@
   <!-- Table -->
   <div class="table-card">
     <div class="table-header">
-      <div>
-        <div class="chart-title">Todos os produtos com atividade</div>
-        <div class="chart-sub" style="margin-top:2px">Receita, COGS, Fees, Lucro bruto/líquido, Margem, ROAS e ROI em USD</div>
-      </div>
+      <div class="chart-title">Todos os produtos com atividade</div>
+      <div class="chart-sub" style="margin-top:3px;font-size:11.5px;color:var(--text2)">Receita, COGS, Fees, Lucro bruto/líquido, Margem, ROAS e ROI em USD</div>
     </div>
     <div class="tscroll">
       <table>
         <thead>
           <tr>
             <th style="width:13%">Produto</th>
-            <th>Pedidos</th>
-            <th>Receita</th>
-            <th>COGS</th>
-            <th>Fees</th>
-            <th>Lucro bruto</th>
-            <th>Mg. bruta</th>
-            <th>Google</th>
-            <th>Facebook</th>
-            <th>Lucro líq.</th>
-            <th>Mg. líq.</th>
-            <th>ROAS</th>
-            <th>ROI</th>
+            <th>Pedidos</th><th>Receita</th><th>COGS</th><th>Fees</th>
+            <th>Lucro bruto</th><th>Mg. bruta</th>
+            <th>Google</th><th id="th-fb">Facebook</th>
+            <th>Lucro líq.</th><th>Mg. líq.</th><th>ROAS</th><th>ROI</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -311,83 +201,177 @@
     </div>
   </div>
 
-  <div class="footer">
-    Gerado em 5 mai 2026 · Colosy Analytics · Câmbio: 1 USD = €0.8555
-  </div>
+  <div class="footer" id="footer">Gerado em 5 mai 2026 · 1 USD = €0.8555</div>
 </div>
 
 <script>
-const RAW=[
-  {p:"ErgoStride",  o:105, rev:5260.96, cog:1701.57, fees:315.51, gs:0.2011},
-  {p:"Klara",       o:45,  rev:2824.04, cog:746.09,  fees:168.57, gs:0.1427},
-  {p:"SoftLoom",    o:39,  rev:2686.44, cog:785.21,  fees:156.80, gs:0.1217},
-  {p:"Z90 Pro",     o:20,  rev:2273.20, cog:795.44,  fees:128.84, gs:0.0754},
-  {p:"OrthoCare",   o:47,  rev:2590.84, cog:759.63,  fees:154.00, gs:0.1242},
-  {p:"OrthoRelief", o:18,  rev:972.44,  cog:269.50,  fees:57.91,  gs:0.0406},
-  {p:"Held Cargo",  o:6,   rev:326.48,  cog:85.98,   fees:16.61,  gs:0},
-  {p:"Barton",      o:13,  rev:856.87,  cog:350.12,  fees:50.16,  gs:0.0350},
-  {p:"SpineAlign",  o:10,  rev:442.63,  cog:89.22,   fees:26.90,  gs:0.0193},
-  {p:"Premium Leder",o:6,  rev:279.84,  cog:99.54,   fees:16.90,  gs:0},
-  {p:"Rawik Cargo", o:10,  rev:485.13,  cog:125.69,  fees:29.20,  gs:0.0227},
-  {p:"Graven",      o:7,   rev:504.22,  cog:168.15,  fees:29.37,  gs:0.0217},
-  {p:"StriDeX",     o:3,   rev:210.05,  cog:67.71,   fees:12.24,  gs:0.0076},
-  {p:"FlexRelief",  o:2,   rev:93.28,   cog:38.11,   fees:5.63,   gs:0},
-  {p:"Pheron",      o:1,   rev:46.64,   cog:15.34,   fees:0,      gs:0},
-  {p:"Veltrix",     o:1,   rev:46.64,   cog:13.16,   fees:2.82,   gs:0},
-  {p:"Juju Sandale",o:1,   rev:41.98,   cog:15.75,   fees:2.57,   gs:0},
-  {p:"Lissora",     o:1,   rev:46.64,   cog:10.03,   fees:2.82,   gs:0.0018},
-  {p:"SyncPack",    o:1,   rev:46.64,   cog:11.27,   fees:2.82,   gs:0.0021},
-  {p:"Bravon",      o:1,   rev:58.33,   cog:20.28,   fees:3.45,   gs:0.0030},
-  {p:"Tenis Urban", o:1,   rev:46.64,   cog:16.38,   fees:2.82,   gs:0.0021},
-  {p:"Santous",     o:1,   rev:46.64,   cog:10.88,   fees:2.82,   gs:0.0049},
-  {p:"NVS",         o:0,   rev:0,       cog:0,       fees:0,      gs:0.0138},
-  {p:"Soft Hood",   o:0,   rev:0,       cog:0,       fees:0,      gs:0.0035},
-  {p:"Nordex",      o:0,   rev:0,       cog:0,       fees:0,      gs:0.0007},
-  {p:"Peaky",       o:0,   rev:0,       cog:0,       fees:0,      gs:0.0004},
+/* ─── COLOSY DATA ─── */
+const COLOSY_RAW=[
+  {p:"ErgoStride",  o:105,rev:5260.96,cog:1701.57,fees:315.51,gs:0.2011},
+  {p:"Klara",       o:45, rev:2824.04,cog:746.09, fees:168.57,gs:0.1427},
+  {p:"SoftLoom",    o:39, rev:2686.44,cog:785.21, fees:156.80,gs:0.1217},
+  {p:"Z90 Pro",     o:20, rev:2273.20,cog:795.44, fees:128.84,gs:0.0754},
+  {p:"OrthoCare",   o:47, rev:2590.84,cog:759.63, fees:154.00,gs:0.1242},
+  {p:"OrthoRelief", o:18, rev:972.44, cog:269.50, fees:57.91, gs:0.0406},
+  {p:"Held Cargo",  o:6,  rev:326.48, cog:85.98,  fees:16.61, gs:0},
+  {p:"Barton",      o:13, rev:856.87, cog:350.12, fees:50.16, gs:0.0350},
+  {p:"SpineAlign",  o:10, rev:442.63, cog:89.22,  fees:26.90, gs:0.0193},
+  {p:"Premium Leder",o:6, rev:279.84, cog:99.54,  fees:16.90, gs:0},
+  {p:"Rawik Cargo", o:10, rev:485.13, cog:125.69, fees:29.20, gs:0.0227},
+  {p:"Graven",      o:7,  rev:504.22, cog:168.15, fees:29.37, gs:0.0217},
+  {p:"StriDeX",     o:3,  rev:210.05, cog:67.71,  fees:12.24, gs:0.0076},
+  {p:"FlexRelief",  o:2,  rev:93.28,  cog:38.11,  fees:5.63,  gs:0},
+  {p:"Pheron",      o:1,  rev:46.64,  cog:15.34,  fees:0,     gs:0},
+  {p:"Veltrix",     o:1,  rev:46.64,  cog:13.16,  fees:2.82,  gs:0},
+  {p:"Juju Sandale",o:1,  rev:41.98,  cog:15.75,  fees:2.57,  gs:0},
+  {p:"Lissora",     o:1,  rev:46.64,  cog:10.03,  fees:2.82,  gs:0.0018},
+  {p:"SyncPack",    o:1,  rev:46.64,  cog:11.27,  fees:2.82,  gs:0.0021},
+  {p:"Bravon",      o:1,  rev:58.33,  cog:20.28,  fees:3.45,  gs:0.0030},
+  {p:"Tenis Urban", o:1,  rev:46.64,  cog:16.38,  fees:2.82,  gs:0.0021},
+  {p:"Santous",     o:1,  rev:46.64,  cog:10.88,  fees:2.82,  gs:0.0049},
+  {p:"NVS",         o:0,  rev:0,      cog:0,      fees:0,     gs:0.0138},
+  {p:"Soft Hood",   o:0,  rev:0,      cog:0,      fees:0,     gs:0.0035},
+  {p:"Nordex",      o:0,  rev:0,      cog:0,      fees:0,     gs:0.0007},
+  {p:"Peaky",       o:0,  rev:0,      cog:0,      fees:0,     gs:0.0004},
+  {p:"Zoe",         o:0,  rev:0,      cog:0,      fees:0,     gs:0.0005},
+  {p:"Norway",      o:0,  rev:0,      cog:0,      fees:0,     gs:0.0004},
+  {p:"Frostline",   o:0,  rev:0,      cog:0,      fees:0,     gs:0},
 ];
+const COLOSY_CFG={name:'Colosy',letter:'C',fx:0.8555,revEur:19906.41,googleUsd:7328.76,fbUsd:467.56,hasFb:true,orders:338,period:'15 abr–3 mai 2026'};
 
-const REV_EUR=19906.41, GOOGLE_USD=7328.76, FB_USD=467.56, FX=0.8555;
+/* ─── RENAZI DATA ─── */
+const RENAZI_RAW=[
+  {p:"Klara",        o:43, rev:2453.85, cog:608.84, fees:143.57, g:635.53},
+  {p:"ErgoStride",   o:50, rev:2092.77, cog:693.38, fees:123.40, g:776.72},
+  {p:"StrideX",      o:28, rev:1665.22, cog:554.97, fees:93.91,  g:425.12},
+  {p:"SoftLoom",     o:27, rev:1336.65, cog:399.03, fees:79.11,  g:201.92},
+  {p:"Rawik",        o:16, rev:846.30,  cog:197.68, fees:49.84,  g:261.84},
+  {p:"Barton",       o:10, rev:538.90,  cog:263.29, fees:25.76,  g:136.73},
+  {p:"Premium Leder",o:11, rev:518.70,  cog:150.26, fees:30.83,  g:286.03},
+  {p:"Vellura",      o:8,  rev:359.10,  cog:103.45, fees:19.03,  g:129.16},
+  {p:"OrthoCare",    o:8,  rev:343.14,  cog:216.19, fees:10.95,  g:0},
+  {p:"Vogadeck",     o:4,  rev:239.60,  cog:68.64,  fees:13.96,  g:59.68},
+  {p:"Santous",      o:4,  rev:199.50,  cog:44.16,  fees:11.80,  g:78.59},
+  {p:"Nordex",       o:1,  rev:59.90,   cog:18.14,  fees:3.49,   g:15.37},
+  {p:"OrthoBalance", o:1,  rev:49.90,   cog:17.60,  fees:0,      g:0},
+  {p:"Trenton",      o:1,  rev:49.90,   cog:49.90,  fees:0,      g:0},
+  {p:"Held",         o:1,  rev:39.90,   cog:39.90,  fees:0,      g:0},
+  {p:"Soft Hood",    o:1,  rev:39.90,   cog:10.74,  fees:2.41,   g:0},
+  {p:"Vanilla",      o:1,  rev:35.91,   cog:0,      fees:2.20,   g:0},
+  {p:"Fints",        o:0,  rev:0,       cog:0,      fees:0,      g:16.20},
+  {p:"OrthoRelief",  o:0,  rev:0,       cog:0,      fees:0,      g:8.55},
+  {p:"Norway",       o:0,  rev:0,       cog:0,      fees:0,      g:6.40},
+  {p:"Peaky",        o:0,  rev:0,       cog:0,      fees:0,      g:6.30},
+  {p:"Ravello",      o:0,  rev:0,       cog:0,      fees:0,      g:3.04},
+  {p:"Braxen",       o:0,  rev:0,       cog:0,      fees:0,      g:0.05},
+];
+const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:10948.94,googleUsd:3047.23,fbUsd:0,hasFb:false,orders:217,period:'15 abr–3 mai 2026'};
 
-function compute(){
-  const origRev=RAW.filter(d=>d.o>0).reduce((a,d)=>a+d.rev,0);
-  const revUsd=REV_EUR/FX;
+/* ─── STATE ─── */
+let currentStore='colosy';
+let DATA=[];
+let charts={};
+
+/* ─── HELPERS ─── */
+const $=id=>document.getElementById(id);
+const usd=(v,force=false)=>{
+  if(v===0&&!force)return'—';
+  return(v<0?'-':'')+'$'+Math.abs(Math.round(v)).toLocaleString('en-US');
+};
+const pct=v=>(v===null||!isFinite(v))?'—':v.toFixed(1)+'%';
+const x2=v=>v>0?v.toFixed(2)+'x':'—';
+function pcls(v,lo,hi){return v>=hi?'tp-green':v>=lo?'tp-amber':'tp-red';}
+function pillCls(v,lo,hi){return v>=hi?'pill-green':v>=lo?'pill-amber':'pill-red';}
+
+/* ─── COMPUTE ─── */
+function computeColosy(){
+  const cfg=COLOSY_CFG;
+  const origRev=COLOSY_RAW.filter(d=>d.o>0).reduce((a,d)=>a+d.rev,0);
+  const revUsd=cfg.revEur/cfg.fx;
   const scale=origRev>0?revUsd/origRev:1;
-  return RAW.map(d=>{
+  return COLOSY_RAW.map(d=>{
     const rev=+(d.rev*scale).toFixed(2);
     const cog=+(d.cog*scale).toFixed(2);
     const fees=+(d.fees*scale).toFixed(2);
     const gp=+(rev-cog-fees).toFixed(2);
     const gm=rev>0?+(gp/rev*100).toFixed(1):0;
-    const g=+(d.gs*GOOGLE_USD).toFixed(2);
-    const fb=+(d.gs*FB_USD).toFixed(2);
+    const g=+(d.gs*cfg.googleUsd).toFixed(2);
+    const fb=+(d.gs*cfg.fbUsd).toFixed(2);
     const ads=+(g+fb).toFixed(2);
     const np=+(gp-ads).toFixed(2);
     const nm=rev>0?+(np/rev*100).toFixed(1):null;
     const roas=ads>0?+(rev/ads).toFixed(2):0;
     const roi=ads>0?+(np/ads*100).toFixed(1):null;
-    return {p:d.p,o:d.o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
+    return{p:d.p,o:d.o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
   });
 }
 
-const DATA=compute();
+function computeRenazi(){
+  const cfg=RENAZI_CFG;
+  return RENAZI_RAW.map(d=>{
+    const rev=+(d.rev/cfg.fx).toFixed(2);
+    const cog=+(d.cog/cfg.fx).toFixed(2);
+    const fees=+(d.fees/cfg.fx).toFixed(2);
+    const gp=+(rev-cog-fees).toFixed(2);
+    const gm=rev>0?+(gp/rev*100).toFixed(1):0;
+    const g=+d.g.toFixed(2);
+    const fb=0;
+    const ads=g;
+    const np=+(gp-ads).toFixed(2);
+    const nm=rev>0?+(np/rev*100).toFixed(1):null;
+    const roas=ads>0?+(rev/ads).toFixed(2):0;
+    const roi=ads>0?+(np/ads*100).toFixed(1):null;
+    return{p:d.p,o:d.o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
+  });
+}
 
-const usd=(v,force=false)=>{
-  if(v===0&&!force)return'—';
-  const s=(v<0?'-':'')+' $'+Math.abs(Math.round(v)).toLocaleString('en-US');
-  return s.replace(' ','');
-};
-const pct=v=>(v===null||!isFinite(v))?'—':v.toFixed(1)+'%';
-const x2=v=>v>0?v.toFixed(2)+'x':'—';
+/* ─── STORE SWITCH ─── */
+function switchStore(store){
+  currentStore=store;
+  const cfg=store==='colosy'?COLOSY_CFG:RENAZI_CFG;
+  DATA=store==='colosy'?computeColosy():computeRenazi();
 
-function pcls(v,lo,hi){return v>=hi?'tp-green':v>=lo?'tp-amber':'tp-red';}
+  // Buttons
+  $('btn-colosy').classList.toggle('active',store==='colosy');
+  $('btn-renazi').classList.toggle('active',store==='renazi');
+  $('btn-renazi').classList.toggle('renazi-active',store==='renazi');
 
-/* ── KPI Cards ── */
+  // Header
+  $('hdr-logo').textContent=cfg.letter;
+  $('hdr-logo').className='logo'+(store==='renazi'?' renazi':'');
+  $('hdr-title').textContent=cfg.name+' — P&L Dashboard';
+  $('hdr-sub').textContent='Visão geral de produtos · '+cfg.period;
+  $('hdr-badges').innerHTML=
+    `<span class="badge">${cfg.orders} pedidos</span>`+
+    `<span class="badge">${DATA.filter(d=>d.o>0).length} produtos ativos</span>`+
+    `<span class="badge fx${store==='renazi'?' renazi':''}">1 USD = €${cfg.fx.toFixed(4)}</span>`;
+
+  // Facebook column visibility
+  $('th-fb').style.display=cfg.hasFb?'':'none';
+
+  // Ads chart label
+  $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
+  $('fb-legend-item').style.display=cfg.hasFb?'':'none';
+
+  $('footer').textContent=`Gerado em 5 mai 2026 · ${cfg.name} Analytics · 1 USD = €${cfg.fx.toFixed(4)}`;
+
+  // Rebuild
+  buildKPIs();
+  destroyCharts();
+  buildRevNP();
+  buildMargins();
+  buildAds();
+  buildWaterfall();
+  buildTable();
+}
+
+/* ─── KPI CARDS ─── */
 function buildKPIs(){
+  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
   const active=DATA.filter(d=>d.o>0||d.ads>0.05);
   const T=active.reduce((a,d)=>({
-    o:a.o+d.o, rev:a.rev+d.rev, cog:a.cog+d.cog,
-    fees:a.fees+d.fees, gp:a.gp+d.gp,
-    g:a.g+d.g, fb:a.fb+d.fb, np:a.np+d.np
+    o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,
+    fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np
   }),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
   T.gm=T.rev>0?T.gp/T.rev*100:0;
   T.ads=T.g+T.fb;
@@ -395,171 +379,159 @@ function buildKPIs(){
   T.roas=T.ads>0?T.rev/T.ads:0;
 
   const cards=[
-    {label:'Receita total',     value:usd(T.rev),           sub:`€${Math.round(REV_EUR).toLocaleString('en-US')} EUR`,          color:'c-indigo'},
-    {label:'Lucro líquido',     value:usd(T.np),            sub:`Margem líquida`,   pill:{v:T.nm,lo:0,hi:20}, color:'c-green'},
-    {label:'Lucro bruto',       value:usd(T.gp),            sub:`Margem bruta`,     pill:{v:T.gm,lo:50,hi:65}, color:'c-blue'},
-    {label:'Total em Ads',      value:usd(T.ads),           sub:`Google + Facebook`, color:'c-amber'},
-    {label:'ROAS',              value:T.roas.toFixed(2)+'x',sub:`Retorno sobre ads`, pill:{v:T.roas*10,lo:20,hi:30}, color:'c-purple'},
-    {label:'Pedidos',           value:T.o,                  sub:`${DATA.filter(d=>d.o>0).length} produtos com vendas`, color:'c-indigo'},
+    {label:'Receita total',value:usd(T.rev),sub:`€${Math.round(cfg.revEur).toLocaleString('en-US')} EUR`,color:'c-indigo'},
+    {label:'Lucro líquido',value:usd(T.np),pill:{v:T.nm,lo:0,hi:20},sub:'Margem líquida',color:'c-green'},
+    {label:'Lucro bruto',value:usd(T.gp),pill:{v:T.gm,lo:50,hi:65},sub:'Margem bruta',color:'c-blue'},
+    {label:'Total em Ads',value:usd(T.ads),sub:cfg.hasFb?'Google + Facebook':'Google Ads',color:'c-amber'},
+    {label:'ROAS',value:T.roas.toFixed(2)+'x',pill:{v:T.roas,lo:2,hi:3},sub:'Retorno sobre ads',color:'c-purple'},
+    {label:'Pedidos',value:T.o,sub:`${DATA.filter(d=>d.o>0).length} produtos com vendas`,color:'c-teal'},
   ];
 
-  const grid=document.getElementById('kpi-grid');
+  const grid=$('kpi-grid');
+  grid.innerHTML='';
   cards.forEach(c=>{
-    const pillHtml=c.pill?`<div class="kpi-pill ${pcls(c.pill.v,c.pill.lo,c.pill.hi)}">${c.pill.v.toFixed(1)}%</div>`:
-      `<div class="kpi-sub">${c.sub}</div>`;
-    const subHtml=c.pill?`<div class="kpi-sub">${c.sub}</div>`:'';
+    const pv=c.pill?c.pill.v:null;
+    const phtml=pv!==null?`<div class="kpi-pill ${pillCls(pv,c.pill.lo,c.pill.hi)}">${pv.toFixed(1)}%</div>`:'';
     grid.insertAdjacentHTML('beforeend',`
       <div class="kpi-card ${c.color}">
         <div class="kpi-label">${c.label}</div>
         <div class="kpi-value">${c.value}</div>
-        ${pillHtml}${subHtml}
+        ${phtml}
+        <div class="kpi-sub">${c.sub}</div>
       </div>`);
   });
 }
 
-/* ── Chart: Revenue vs Net Profit ── */
+/* ─── CHART DESTROY ─── */
+function destroyCharts(){
+  Object.values(charts).forEach(c=>{if(c)c.destroy()});
+  charts={};
+}
+
+/* ─── CHART: Revenue vs NP ─── */
 function buildRevNP(){
   const top=DATA.filter(d=>d.o>0).sort((a,b)=>b.rev-a.rev).slice(0,10);
-  const labels=top.map(d=>d.p);
-  new Chart(document.getElementById('chart-revnp'),{
+  charts.revnp=new Chart($('chart-revnp'),{
     type:'bar',
     data:{
-      labels,
+      labels:top.map(d=>d.p),
       datasets:[
-        {label:'Receita',     data:top.map(d=>d.rev), backgroundColor:'#4f46e5', borderRadius:4, borderSkipped:false},
-        {label:'Lucro líq.',  data:top.map(d=>d.np),  backgroundColor:top.map(d=>d.np>=0?'#10b981':'#ef4444'), borderRadius:4, borderSkipped:false},
+        {label:'Receita',data:top.map(d=>d.rev),backgroundColor:'#4f46e5',borderRadius:4,borderSkipped:false},
+        {label:'Lucro líq.',data:top.map(d=>d.np),backgroundColor:top.map(d=>d.np>=0?'#10b981':'#ef4444'),borderRadius:4,borderSkipped:false},
       ]
     },
     options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+usd(ctx.raw,true)}}},
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+usd(ctx.raw,true)}}},
       scales:{
-        x:{grid:{display:false}, ticks:{font:{size:10},color:'#9aa0b4'}},
-        y:{grid:{color:'#f0f2f8'}, ticks:{font:{size:10},color:'#9aa0b4', callback:v=>'$'+Math.round(v/1000)+'k'}}
+        x:{grid:{display:false},ticks:{font:{size:10},color:'#9aa0b4'}},
+        y:{grid:{color:'#f0f2f8'},ticks:{font:{size:10},color:'#9aa0b4',callback:v=>'$'+Math.round(v/1000)+'k'}}
       }
     }
   });
 }
 
-/* ── Chart: Net Margin by product ── */
+/* ─── CHART: Margins ─── */
 function buildMargins(){
   const rows=DATA.filter(d=>d.o>0&&d.nm!==null).sort((a,b)=>b.nm-a.nm);
-  const labels=rows.map(d=>d.p);
-  const colors=rows.map(d=>d.nm>=20?'#10b981':d.nm>=0?'#f59e0b':'#ef4444');
-  new Chart(document.getElementById('chart-margins'),{
+  charts.margins=new Chart($('chart-margins'),{
     type:'bar',
     data:{
-      labels,
-      datasets:[{
-        label:'Margem líquida',
-        data:rows.map(d=>d.nm),
-        backgroundColor:colors,
-        borderRadius:4, borderSkipped:false
-      }]
+      labels:rows.map(d=>d.p),
+      datasets:[{label:'Margem líquida',data:rows.map(d=>d.nm),
+        backgroundColor:rows.map(d=>d.nm>=20?'#10b981':d.nm>=0?'#f59e0b':'#ef4444'),
+        borderRadius:4,borderSkipped:false}]
     },
     options:{
-      indexAxis:'y',
-      responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed(1)}%`}}},
+      indexAxis:'y',responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed(1)}%`}}},
       scales:{
-        x:{grid:{color:'#f0f2f8'}, ticks:{font:{size:10},color:'#9aa0b4',callback:v=>v+'%'}},
-        y:{grid:{display:false}, ticks:{font:{size:10},color:'#5a6278'}}
+        x:{grid:{color:'#f0f2f8'},ticks:{font:{size:10},color:'#9aa0b4',callback:v=>v+'%'}},
+        y:{grid:{display:false},ticks:{font:{size:10},color:'#5a6278'}}
       }
     }
   });
 }
 
-/* ── Chart: Ads distribution ── */
+/* ─── CHART: Ads ─── */
 function buildAds(){
+  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
   const top=DATA.filter(d=>d.ads>1).sort((a,b)=>b.ads-a.ads).slice(0,10);
-  const labels=top.map(d=>d.p);
-  new Chart(document.getElementById('chart-ads'),{
+  const datasets=[
+    {label:'Google Ads',data:top.map(d=>d.g),backgroundColor:'#4f46e5',borderRadius:4,borderSkipped:false,stack:'ads'},
+  ];
+  if(cfg.hasFb){
+    datasets.push({label:'Facebook',data:top.map(d=>d.fb),backgroundColor:'#7c3aed',borderRadius:4,borderSkipped:false,stack:'ads'});
+  }
+  charts.ads=new Chart($('chart-ads'),{
     type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Google Ads', data:top.map(d=>d.g),  backgroundColor:'#4f46e5', borderRadius:4, borderSkipped:false, stack:'ads'},
-        {label:'Facebook',   data:top.map(d=>d.fb), backgroundColor:'#7c3aed', borderRadius:4, borderSkipped:false, stack:'ads'},
-      ]
-    },
+    data:{labels:top.map(d=>d.p),datasets},
     options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>' '+usd(ctx.raw,true)}}},
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+usd(ctx.raw,true)}}},
       scales:{
-        x:{grid:{display:false}, ticks:{font:{size:10},color:'#9aa0b4'}},
-        y:{grid:{color:'#f0f2f8'}, ticks:{font:{size:10},color:'#9aa0b4', callback:v=>'$'+Math.round(v/1000)+'k'}}
+        x:{grid:{display:false},ticks:{font:{size:10},color:'#9aa0b4'}},
+        y:{grid:{color:'#f0f2f8'},ticks:{font:{size:10},color:'#9aa0b4',callback:v=>'$'+Math.round(v/1000)+'k'}}
       }
     }
   });
 }
 
-/* ── Chart: Waterfall ── */
+/* ─── CHART: Waterfall ─── */
 function buildWaterfall(){
+  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
   const active=DATA.filter(d=>d.o>0||d.ads>0.05);
-  const T=active.reduce((a,d)=>({
-    rev:a.rev+d.rev, cog:a.cog+d.cog, fees:a.fees+d.fees,
-    gp:a.gp+d.gp, g:a.g+d.g, fb:a.fb+d.fb, np:a.np+d.np
-  }),{rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
+  const T=active.reduce((a,d)=>({rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
 
-  const labels=['Receita','−COGS','−Fees','Lucro bruto','−Google','−Facebook','Lucro líq.'];
-  const values=[T.rev,-T.cog,-T.fees,T.gp,-T.g,-T.fb,T.np];
-  const colors=['#4f46e5','#f87171','#fbbf24','#3b82f6','#f87171','#fb923c','#10b981'];
+  const labels=cfg.hasFb
+    ?['Receita','− COGS','− Fees','L. bruto','− Google','− Facebook','L. líq.']
+    :['Receita','− COGS','− Fees','L. bruto','− Google','L. líq.'];
+  const values=cfg.hasFb
+    ?[T.rev,-T.cog,-T.fees,T.gp,-T.g,-T.fb,T.np]
+    :[T.rev,-T.cog,-T.fees,T.gp,-T.g,T.np];
+  const isResult=cfg.hasFb?[0,0,0,1,0,0,1]:[0,0,0,1,0,1];
+  const colors=cfg.hasFb
+    ?['#4f46e5','#f87171','#fbbf24','#3b82f6','#f87171','#fb923c','#10b981']
+    :['#4f46e5','#f87171','#fbbf24','#3b82f6','#f87171','#10b981'];
 
-  /* Floating bar: [start, end] */
   let running=0;
   const barData=values.map((v,i)=>{
-    if(i===0||i===3||i===6){ running=Math.abs(v); return [0,Math.abs(v)]; }
-    const start=running+v; running=running+v;
-    return [Math.min(running,running-v), Math.max(running,running-v)];
+    if(isResult[i]){running=Math.abs(v);return[0,Math.abs(v)];}
+    const lo=running+v; running=running+v;
+    return[Math.min(lo,lo-v),Math.max(lo,lo-v)];
   });
 
-  new Chart(document.getElementById('chart-waterfall'),{
+  charts.waterfall=new Chart($('chart-waterfall'),{
     type:'bar',
-    data:{
-      labels,
-      datasets:[{
-        data:barData,
-        backgroundColor:colors,
-        borderRadius:4,
-        borderSkipped:false
-      }]
-    },
+    data:{labels,datasets:[{data:barData,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
     options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>' '+usd(values[ctx.dataIndex],true)}}
-      },
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+usd(values[ctx.dataIndex],true)}}},
       scales:{
-        x:{grid:{display:false}, ticks:{font:{size:9.5},color:'#9aa0b4'}},
-        y:{grid:{color:'#f0f2f8'}, ticks:{font:{size:10},color:'#9aa0b4', callback:v=>'$'+Math.round(v/1000)+'k'}}
+        x:{grid:{display:false},ticks:{font:{size:9.5},color:'#9aa0b4'}},
+        y:{grid:{color:'#f0f2f8'},ticks:{font:{size:10},color:'#9aa0b4',callback:v=>'$'+Math.round(v/1000)+'k'}}
       }
     }
   });
 }
 
-/* ── Table ── */
+/* ─── TABLE ─── */
 const PALETTE=['#4f46e5','#059669','#2563eb','#7c3aed','#d97706','#0891b2','#be185d','#65a30d','#dc2626','#b45309'];
-
 function buildTable(){
+  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
   const rows=DATA.filter(d=>d.o>0||d.ads>0.05).sort((a,b)=>b.np-a.np);
-  const T=rows.reduce((a,d)=>({
-    o:a.o+d.o, rev:a.rev+d.rev, cog:a.cog+d.cog,
-    fees:a.fees+d.fees, gp:a.gp+d.gp,
-    g:a.g+d.g, fb:a.fb+d.fb, np:a.np+d.np
-  }),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
-  T.gm=T.rev>0?T.gp/T.rev*100:0;
-  T.nm=T.rev>0?T.np/T.rev*100:0;
-  T.ads=T.g+T.fb;
-  T.roas=T.ads>0?T.rev/T.ads:0;
-  T.roi=T.ads>0?T.np/T.ads*100:0;
+  const T=rows.reduce((a,d)=>({o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
+  T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
+  T.roas=T.ads>0?T.rev/T.ads:0; T.roi=T.ads>0?T.np/T.ads*100:0;
+
+  const fbHide=cfg.hasFb?'':' style="display:none"';
 
   const html=rows.map((d,i)=>{
-    const noSales=d.o===0;
+    const ns=d.o===0;
     const npCls=d.np>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
-    const color=PALETTE[i%PALETTE.length];
-    return `<tr class="${noSales?'row-nosales':''}">
-      <td><span class="product-dot" style="background:${color}"></span>${d.p}${noSales?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>
+    const nmCls=d.nm>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
+    return `<tr>
+      <td><span class="pdot" style="background:${PALETTE[i%PALETTE.length]}"></span>${d.p}${ns?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>
       <td class="${d.o===0?'tv-muted':''}">${d.o||'—'}</td>
       <td>${d.rev>0?usd(d.rev):'—'}</td>
       <td class="tv-muted">${d.cog>0?usd(d.cog):'—'}</td>
@@ -567,39 +539,32 @@ function buildTable(){
       <td>${d.gp>0?usd(d.gp):'—'}</td>
       <td>${d.gm>0?`<span class="tpill ${pcls(d.gm,50,65)}">${pct(d.gm)}</span>`:'—'}</td>
       <td class="tv-muted">${d.g>0?usd(d.g):'—'}</td>
-      <td class="tv-muted">${d.fb>0?usd(d.fb):'—'}</td>
+      <td class="tv-muted"${fbHide}>${d.fb>0?usd(d.fb):'—'}</td>
       <td class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>
-      <td>${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
+      <td class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
       <td>${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>
       <td>${d.roi!==null?`<span class="tpill ${pcls(d.roi,0,30)}">${pct(d.roi)}</span>`:'—'}</td>
     </tr>`;
   }).join('');
 
   const totRow=`<tr class="tr-total">
-    <td>Total</td>
-    <td>${T.o}</td>
-    <td>${usd(T.rev)}</td>
-    <td class="tv-muted">${usd(T.cog)}</td>
-    <td class="tv-muted">${usd(T.fees)}</td>
+    <td>Total</td><td>${T.o}</td><td>${usd(T.rev)}</td>
+    <td class="tv-muted">${usd(T.cog)}</td><td class="tv-muted">${usd(T.fees)}</td>
     <td>${usd(T.gp)}</td>
     <td><span class="tpill ${pcls(T.gm,50,65)}">${pct(T.gm)}</span></td>
     <td class="tv-muted">${usd(T.g)}</td>
-    <td class="tv-muted">${usd(T.fb)}</td>
+    <td class="tv-muted"${fbHide}>${usd(T.fb)}</td>
     <td class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>
     <td><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>
     <td><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>
     <td><span class="tpill ${pcls(T.roi,0,30)}">${pct(T.roi)}</span></td>
   </tr>`;
 
-  document.getElementById('tbody').innerHTML=html+totRow;
+  $('tbody').innerHTML=html+totRow;
 }
 
-buildKPIs();
-buildRevNP();
-buildMargins();
-buildAds();
-buildWaterfall();
-buildTable();
+/* ─── INIT ─── */
+switchStore('colosy');
 </script>
 </body>
 </html>
