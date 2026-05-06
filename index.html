@@ -277,25 +277,26 @@ const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:10948.94,googleUsd:5
 
 /* ─── MODELINE DATA ─── */
 const MODELINE_RAW=[
-  {p:"Air Modeline",      o:194,rev:9258.82,cog:131.76, fees:557.61,g:3856.22},
-  {p:"OrthoMoc",          o:101,rev:4551.51,cog:152.06, fees:285.67,g:1912.61},
-  {p:"OrthoCare",         o: 93,rev:4194.91,cog: 38.19, fees:252.77,g: 922.63},
-  {p:"Klara",             o: 68,rev:3613.42,cog: 10.42, fees:227.13,g:1629.01},
-  {p:"ErgoStride",        o: 51,rev:2291.52,cog:220.71, fees:143.70,g: 897.93},
-  {p:"Barton",            o: 26,rev:1426.29,cog: 54.80, fees: 81.77,g: 721.97},
-  {p:"Sandales Modeline", o: 16,rev: 739.54,cog: 26.00, fees: 46.27,g: 532.13},
-  {p:"Modeline Shoes",    o:  9,rev: 561.98,cog:  0.00, fees: 29.36,g:   0},
-  {p:"Vellura",           o:  9,rev: 517.63,cog:  0.00, fees: 31.82,g: 438.93},
-  {p:"Norway",            o:  4,rev: 324.43,cog:  0.00, fees: 19.53,g:   0},
-  {p:"Pheron",            o:  6,rev: 242.27,cog:  0.00, fees: 15.35,g: 394.85},
-  {p:"Bravon",            o:  5,rev: 239.52,cog:  0.00, fees: 14.94,g:   0},
-  {p:"SpineAlign",        o:  5,rev: 176.27,cog:  0.00, fees: 11.35,g:   0},
-  {p:"Nordex",            o:  2,rev: 119.80,cog: 16.65, fees:  7.34,g:   0},
-  {p:"Rexy",              o:  1,rev:  90.75,cog:  0.00, fees:  5.43,g:   0},
-  {p:"Rawik",             o:  1,rev:  63.84,cog:  0.00, fees:  3.90,g:   4.28},
-  {p:"FlexSolin",         o:  1,rev:  39.90,cog:  0.00, fees:  0.00,g:   0},
+  // cog = cog + shipping (custo de produto estava em shipping nesta loja)
+  // excluídos: no-cost (47 pedidos) e manual source (16 pedidos)
+  {p:"Air Modeline",      o:178,rev: 8396.95,cog:2833.67,fees: 521.83,g:3856.22},
+  {p:"OrthoMoc",          o: 94,rev: 4211.19,cog:1314.97,fees: 264.20,g:1912.61},
+  {p:"OrthoCare",         o: 84,rev: 3804.51,cog:1208.71,fees: 235.88,g: 922.63},
+  {p:"Klara",             o: 66,rev: 3490.68,cog: 935.58,fees: 219.62,g:1629.01},
+  {p:"ErgoStride",        o: 45,rev: 2009.50,cog: 789.42,fees: 126.09,g: 897.93},
+  {p:"Barton",            o: 20,rev: 1106.89,cog: 414.43,fees:  68.23,g: 721.97},
+  {p:"Sandales Modeline", o: 13,rev:  569.94,cog: 200.32,fees:  35.83,g: 532.13},
+  {p:"Vellura",           o:  9,rev:  517.63,cog: 134.12,fees:  31.82,g: 438.93},
+  {p:"Norway",            o:  4,rev:  324.43,cog: 119.02,fees:  19.53,g:   0},
+  {p:"Modeline Shoes",    o:  5,rev:  329.54,cog: 125.09,fees:  17.60,g:   0},
+  {p:"Pheron",            o:  6,rev:  242.27,cog:  89.72,fees:  15.35,g: 394.85},
+  {p:"Bravon",            o:  5,rev:  239.52,cog:  94.48,fees:  14.94,g:   0},
+  {p:"SpineAlign",        o:  5,rev:  176.27,cog:  54.35,fees:  11.35,g:   0},
+  {p:"Rexy",              o:  1,rev:   90.75,cog:  28.78,fees:   5.43,g:   0},
+  {p:"Nordex",            o:  1,rev:   59.90,cog:  16.65,fees:   3.67,g:   0},
+  {p:"Rawik",             o:  0,rev:   0,    cog:   0,   fees:   0,   g:   4.28},
 ];
-const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:28452.40,googleUsd:11310.56,fbUsd:0,hasFb:false,orders:592,period:'15 abr–4 mai 2026'};
+const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:25569.97,googleUsd:11310.56,fbUsd:0,hasFb:false,orders:536,period:'15 abr–4 mai 2026'};
 
 /* ─── STATE ─── */
 let currentStore='colosy';
