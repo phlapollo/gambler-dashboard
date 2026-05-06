@@ -126,7 +126,7 @@
     <div class="header-left">
       <div class="logo" id="hdr-logo">C</div>
       <div class="header-title">
-        <h1 id="hdr-title">P&amp;L Dashboard</h1>
+        <h1 id="hdr-title">Dashboard</h1>
         <p id="hdr-sub">Visão geral de produtos · 15 abr – 3 mai 2026</p>
       </div>
     </div>
@@ -164,7 +164,7 @@
             <th>Pedidos</th><th>Receita</th><th>COGS</th><th>Fees</th>
             <th>Lucro bruto</th><th>Mg. bruta</th>
             <th>Google</th><th id="th-fb">Facebook</th>
-            <th>Lucro líq.</th><th>Mg. líq.</th><th>ROAS</th><th>ROI</th>
+            <th>Lucro líq.</th><th>Mg. líq.</th><th>ROAS</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -549,7 +549,6 @@ function buildTable(){
       <td class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>
       <td class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
       <td>${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>
-      <td>${d.roi!==null?`<span class="tpill ${pcls(d.roi,0,30)}">${pct(d.roi)}</span>`:'—'}</td>
     </tr>`;
   }).join('');
 
@@ -563,7 +562,6 @@ function buildTable(){
     <td class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>
     <td><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>
     <td><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>
-    <td><span class="tpill ${pcls(T.roi,0,30)}">${pct(T.roi)}</span></td>
   </tr>`;
 
   $('tbody').innerHTML=html+totRow;
