@@ -32,6 +32,7 @@
     .store-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
     .store-btn.active .s-dot{opacity:1}
     .store-btn.active.renazi-active{background:var(--green);box-shadow:0 2px 8px rgba(5,150,105,.3)}
+    .store-btn.active.modeline-active{background:#d97706;box-shadow:0 2px 8px rgba(217,119,6,.3)}
 
     /* Header */
     .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
@@ -42,12 +43,14 @@
       background:linear-gradient(135deg,#4f46e5,#7c3aed);transition:background .3s
     }
     .logo.renazi{background:linear-gradient(135deg,#059669,#0891b2)}
+    .logo.modeline{background:linear-gradient(135deg,#d97706,#f59e0b)}
     .header-title h1{font-size:18px;font-weight:600;letter-spacing:-.3px}
     .header-title p{font-size:12.5px;color:var(--text2);margin-top:1px}
     .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .badge{font-size:11.5px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
     .badge.fx{background:var(--accent-light);color:var(--accent);border-color:var(--accent-border)}
     .badge.fx.renazi{background:var(--green-light);color:var(--green);border-color:#a7f3d0}
+    .badge.fx.modeline{background:var(--amber-light);color:var(--amber);border-color:#fcd34d}
 
     /* KPIs */
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:22px}
@@ -120,6 +123,9 @@
       </button>
       <button class="store-btn" id="btn-renazi" onclick="switchStore('renazi')">
         <span class="s-dot"></span>Renazi
+      </button>
+      <button class="store-btn" id="btn-modeline" onclick="switchStore('modeline')">
+        <span class="s-dot"></span>Modeline
       </button>
     </div>
   </div>
@@ -269,6 +275,28 @@ const RENAZI_RAW=[
 ];
 const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:10948.94,googleUsd:5943.40,fbUsd:0,hasFb:false,orders:217,period:'15 abr–3 mai 2026'};
 
+/* ─── MODELINE DATA ─── */
+const MODELINE_RAW=[
+  {p:"Air Modeline",      o:194,rev:9258.82,cog:131.76, fees:557.61,g:3856.22},
+  {p:"OrthoMoc",          o:101,rev:4551.51,cog:152.06, fees:285.67,g:1912.61},
+  {p:"OrthoCare",         o: 93,rev:4194.91,cog: 38.19, fees:252.77,g: 922.63},
+  {p:"Klara",             o: 68,rev:3613.42,cog: 10.42, fees:227.13,g:1629.01},
+  {p:"ErgoStride",        o: 51,rev:2291.52,cog:220.71, fees:143.70,g: 897.93},
+  {p:"Barton",            o: 26,rev:1426.29,cog: 54.80, fees: 81.77,g: 721.97},
+  {p:"Sandales Modeline", o: 16,rev: 739.54,cog: 26.00, fees: 46.27,g: 532.13},
+  {p:"Modeline Shoes",    o:  9,rev: 561.98,cog:  0.00, fees: 29.36,g:   0},
+  {p:"Vellura",           o:  9,rev: 517.63,cog:  0.00, fees: 31.82,g: 438.93},
+  {p:"Norway",            o:  4,rev: 324.43,cog:  0.00, fees: 19.53,g:   0},
+  {p:"Pheron",            o:  6,rev: 242.27,cog:  0.00, fees: 15.35,g: 394.85},
+  {p:"Bravon",            o:  5,rev: 239.52,cog:  0.00, fees: 14.94,g:   0},
+  {p:"SpineAlign",        o:  5,rev: 176.27,cog:  0.00, fees: 11.35,g:   0},
+  {p:"Nordex",            o:  2,rev: 119.80,cog: 16.65, fees:  7.34,g:   0},
+  {p:"Rexy",              o:  1,rev:  90.75,cog:  0.00, fees:  5.43,g:   0},
+  {p:"Rawik",             o:  1,rev:  63.84,cog:  0.00, fees:  3.90,g:   4.28},
+  {p:"FlexSolin",         o:  1,rev:  39.90,cog:  0.00, fees:  0.00,g:   0},
+];
+const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:28452.40,googleUsd:11310.56,fbUsd:0,hasFb:false,orders:592,period:'15 abr–4 mai 2026'};
+
 /* ─── STATE ─── */
 let currentStore='colosy';
 let DATA=[];
@@ -327,26 +355,50 @@ function computeRenazi(){
   });
 }
 
+function computeModeline(){
+  const cfg=MODELINE_CFG;
+  return MODELINE_RAW.map(d=>{
+    const rev=+(d.rev/cfg.fx).toFixed(2);
+    const cog=+(d.cog/cfg.fx).toFixed(2);
+    const fees=+(d.fees/cfg.fx).toFixed(2);
+    const gp=+(rev-cog-fees).toFixed(2);
+    const gm=rev>0?+(gp/rev*100).toFixed(1):0;
+    const g=+d.g.toFixed(2);
+    const fb=0;
+    const ads=g;
+    const np=+(gp-ads).toFixed(2);
+    const nm=rev>0?+(np/rev*100).toFixed(1):null;
+    const roas=ads>0?+(rev/ads).toFixed(2):0;
+    const roi=ads>0?+(np/ads*100).toFixed(1):null;
+    return{p:d.p,o:d.o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
+  });
+}
+
 /* ─── STORE SWITCH ─── */
+function getCFG(store){return store==='colosy'?COLOSY_CFG:store==='renazi'?RENAZI_CFG:MODELINE_CFG;}
 function switchStore(store){
   currentStore=store;
-  const cfg=store==='colosy'?COLOSY_CFG:RENAZI_CFG;
-  DATA=store==='colosy'?computeColosy():computeRenazi();
+  const cfg=getCFG(store);
+  DATA=store==='colosy'?computeColosy():store==='renazi'?computeRenazi():computeModeline();
 
   // Buttons
-  $('btn-colosy').classList.toggle('active',store==='colosy');
-  $('btn-renazi').classList.toggle('active',store==='renazi');
-  $('btn-renazi').classList.toggle('renazi-active',store==='renazi');
+  ['colosy','renazi','modeline'].forEach(s=>{
+    const btn=$('btn-'+s);
+    btn.classList.toggle('active',store===s);
+    btn.classList.toggle('renazi-active', s==='renazi'&&store===s);
+    btn.classList.toggle('modeline-active',s==='modeline'&&store===s);
+  });
 
   // Header
   $('hdr-logo').textContent=cfg.letter;
-  $('hdr-logo').className='logo'+(store==='renazi'?' renazi':'');
+  $('hdr-logo').className='logo'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('hdr-title').textContent=cfg.name+' — P&L Dashboard';
   $('hdr-sub').textContent='Visão geral de produtos · '+cfg.period;
+  const fxCls='badge fx'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('hdr-badges').innerHTML=
     `<span class="badge">${cfg.orders} pedidos</span>`+
     `<span class="badge">${DATA.filter(d=>d.o>0).length} produtos ativos</span>`+
-    `<span class="badge fx${store==='renazi'?' renazi':''}">1 USD = €${cfg.fx.toFixed(4)}</span>`;
+    `<span class="${fxCls}">1 USD = €${cfg.fx.toFixed(4)}</span>`;
 
   // Facebook column visibility
   $('th-fb').style.display=cfg.hasFb?'':'none';
@@ -369,7 +421,7 @@ function switchStore(store){
 
 /* ─── KPI CARDS ─── */
 function buildKPIs(){
-  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
+  const cfg=getCFG(currentStore);
   const active=DATA.filter(d=>d.o>0||d.ads>0.05);
   const T=active.reduce((a,d)=>({
     o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,
@@ -457,7 +509,7 @@ function buildMargins(){
 
 /* ─── CHART: Ads ─── */
 function buildAds(){
-  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
+  const cfg=getCFG(currentStore);
   const top=DATA.filter(d=>d.ads>1).sort((a,b)=>b.ads-a.ads).slice(0,10);
   const datasets=[
     {label:'Google Ads',data:top.map(d=>d.g),backgroundColor:'#4f46e5',borderRadius:4,borderSkipped:false,stack:'ads'},
@@ -515,7 +567,7 @@ function buildWaterfall(){
 /* ─── TABLE ─── */
 const PALETTE=['#4f46e5','#059669','#2563eb','#7c3aed','#d97706','#0891b2','#be185d','#65a30d','#dc2626','#b45309'];
 function buildTable(){
-  const cfg=currentStore==='colosy'?COLOSY_CFG:RENAZI_CFG;
+  const cfg=getCFG(currentStore);
   const rows=DATA.filter(d=>d.o>0||d.ads>0.05).sort((a,b)=>b.np-a.np);
   const T=rows.reduce((a,d)=>({o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
   T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
