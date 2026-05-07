@@ -1269,15 +1269,7 @@ function renderTarget(){
   $('pt-remaining').textContent=achieved?'—':usd(remaining,true);
   $('pt-achieved').style.display=achieved?'':'none';
 
-  const daysLeft=daysInMonth-dayOfMonth;
-  if(daysLeft>0&&!achieved){
-    const dailyPace=remaining/daysLeft;
-    $('pt-pace').textContent=`Pace: ${usd(dailyPace,true)}/dia · ${daysLeft}d restantes em ${monthName}`;
-  } else if(achieved){
-    $('pt-pace').textContent='';
-  } else {
-    $('pt-pace').textContent=`Último dia de ${monthName}`;
-  }
+  $('pt-pace').textContent='';
 
   // Always show which month is being tracked (never affected by date filter)
   $('pt-period-warn').style.display='';
