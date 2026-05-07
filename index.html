@@ -340,6 +340,10 @@
           <div class="pt-lbl">Faltam</div>
           <div class="pt-val" id="pt-remaining"></div>
         </div>
+        <div class="pt-col">
+          <div class="pt-lbl">Média / dia</div>
+          <div class="pt-val" id="pt-daily-avg"></div>
+        </div>
         <div class="pt-pace" id="pt-pace"></div>
         <div class="pt-badge" id="pt-achieved" style="display:none">Meta atingida 🎯</div>
         <div class="pt-warn" id="pt-period-warn" style="display:none"></div>
@@ -1268,6 +1272,9 @@ function renderTarget(){
   const remaining=Math.max(0,target-actual);
   $('pt-remaining').textContent=achieved?'—':usd(remaining,true);
   $('pt-achieved').style.display=achieved?'':'none';
+
+  const dailyAvg=dayOfMonth>0?actual/dayOfMonth:0;
+  $('pt-daily-avg').textContent=usd(dailyAvg,true);
 
   $('pt-pace').textContent='';
 
