@@ -51,11 +51,6 @@
     /* Meta badges */
     .badge{font-size:11.5px;font-weight:400;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
 
-    /* Store indicator */
-    .store-indicator{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
-    .store-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;transition:background .25s}
-    .store-dot.renazi{background:var(--green)}
-    .store-dot.modeline{background:var(--amber)}
 
     /* KPIs */
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:20px}
@@ -242,19 +237,16 @@
     <div class="header-left">
       <div class="logo" id="hdr-logo">C</div>
       <div class="header-title">
-        <h1 id="hdr-title">Dashboard</h1>
+        <h1 id="hdr-title">Dashboard · <span id="hdr-store-name" style="font-weight:500;color:var(--text2)">Colosy</span></h1>
         <p id="hdr-sub">Visão geral de produtos · 15 abr – 3 mai 2026</p>
       </div>
     </div>
     <div class="header-right">
-      <div class="store-indicator">
-        <span class="store-dot" id="hdr-dot"></span>
-        <span id="hdr-store-name">Colosy</span>
-      </div>
-      <div id="hdr-badges"></div>
       <!-- Date Range Picker -->
-      <div class="dr-wrap" id="dr-wrap">
-        <div class="dr-btn" onclick="toggleDR()" id="dr-btn">
+      <div class="store-dropdown">
+        <span class="store-label">Período</span>
+        <div class="dr-wrap" id="dr-wrap">
+          <div class="dr-btn" onclick="toggleDR()" id="dr-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span id="dr-label">Todo o período</span>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
@@ -300,6 +292,8 @@
               <button class="dr-cancel" onclick="closeDR()">Cancelar</button>
               <button class="dr-apply" onclick="applyCustomDR()">Aplicar</button>
             </div>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -629,7 +623,6 @@ function switchStore(store){
   $('hdr-logo').textContent=cfg.letter;
   $('hdr-logo').className='logo'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('hdr-store-name').textContent=cfg.name;
-  $('hdr-dot').className='store-dot'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('th-fb').style.display=cfg.hasFb?'':'none';
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
@@ -1171,7 +1164,6 @@ function refreshWithScale(){
   // Header
   const lbl=$('dr-label').textContent;
   $('hdr-sub').textContent='Visão geral de produtos · '+lbl;
-  $('hdr-badges').innerHTML=`<span class="badge">${Math.round(cfg.orders*factor)} pedidos · ${DATA.filter(d=>d.o>0).length} produtos</span>`;
   $('footer').textContent=`${cfg.name} · ${lbl} · 1 USD = €${cfg.fx.toFixed(4)}`;
 
   // Estimate banner: show when period < totalDays
