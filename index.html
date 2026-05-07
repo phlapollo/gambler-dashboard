@@ -96,8 +96,13 @@
     .tscroll{overflow-x:auto}
     table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
     thead{background:var(--surface2)}
-    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:color .15s}
+    th:hover{color:var(--text2)}
+    th.th-sorted{color:var(--accent)}
     th:first-child{text-align:left}
+    .th-inner{display:inline-flex;align-items:center;gap:4px}
+    .sort-icon{opacity:.3;transition:opacity .15s;flex-shrink:0}
+    th.th-sorted .sort-icon{opacity:1}
     td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
     td:first-child{text-align:left;font-weight:500;color:var(--text)}
     tr:last-child td{border-bottom:none}
@@ -237,12 +242,19 @@
     <div class="tscroll">
       <table>
         <thead>
-          <tr>
-            <th style="width:13%">Produto</th>
-            <th>Pedidos</th><th>Receita</th><th>COGS</th><th>Fees</th>
-            <th>Lucro bruto</th><th>Mg. bruta</th>
-            <th>Google</th><th id="th-fb">Facebook</th>
-            <th>Lucro líq.</th><th>Mg. líq.</th><th>ROAS</th>
+          <tr id="thead-row">
+            <th data-col="p"    style="width:13%" onclick="sortBy('p')"   ><span class="th-inner">Produto    <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="o"    onclick="sortBy('o')"   ><span class="th-inner">Pedidos    <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="rev"  onclick="sortBy('rev')" ><span class="th-inner">Receita    <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="cog"  onclick="sortBy('cog')" ><span class="th-inner">COGS       <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="fees" onclick="sortBy('fees')"><span class="th-inner">Fees       <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="gp"   onclick="sortBy('gp')"  ><span class="th-inner">Lucro bruto<svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="gm"   onclick="sortBy('gm')"  ><span class="th-inner">Mg. bruta  <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="g"    onclick="sortBy('g')"   ><span class="th-inner">Google     <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="fb"   onclick="sortBy('fb')"  id="th-fb"><span class="th-inner">Facebook   <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="np"   onclick="sortBy('np')"  ><span class="th-inner">Lucro líq. <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="nm"   onclick="sortBy('nm')"  ><span class="th-inner">Mg. líq.   <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
+            <th data-col="roas" onclick="sortBy('roas')"><span class="th-inner">ROAS       <svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg></span></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -383,6 +395,7 @@ let currentStore='colosy';
 let DATA=[];
 let charts={};
 let drState={preset:'all',start:null,end:null};
+let sortState={col:'np',dir:-1}; // dir: -1=desc, 1=asc
 
 /* ─── HELPERS ─── */
 const $=id=>document.getElementById(id);
@@ -590,10 +603,54 @@ function buildAds(){
   });
 }
 
+/* ─── SORT ─── */
+function sortBy(col){
+  if(sortState.col===col){
+    sortState.dir*=-1;
+  } else {
+    sortState.col=col;
+    sortState.dir=-1; // sempre começa desc
+  }
+  buildTable();
+}
+
+function applySort(rows){
+  const {col,dir}=sortState;
+  return [...rows].sort((a,b)=>{
+    let va=a[col]??null, vb=b[col]??null;
+    // texto (produto)
+    if(typeof va==='string') return dir*(va.localeCompare(vb,'pt'));
+    // nulos vão para o fim
+    if(va===null&&vb===null) return 0;
+    if(va===null) return 1;
+    if(vb===null) return -1;
+    return dir*(va-vb);
+  });
+}
+
+function updateSortHeaders(){
+  const {col,dir}=sortState;
+  // SVG path: seta pra cima (asc) ou pra baixo (desc)
+  const upPath   ='M12 5v14M5 12l7-7 7 7';
+  const downPath ='M12 19V5M5 12l7 7 7-7';
+  const neutPath ='M12 5v14M5 12l7-7 7 7';
+  document.querySelectorAll('#thead-row th').forEach(th=>{
+    const c=th.dataset.col;
+    const isActive=(c===col);
+    th.classList.toggle('th-sorted',isActive);
+    const svg=th.querySelector('.sort-icon path');
+    if(!svg) return;
+    if(!isActive) svg.setAttribute('d',neutPath);
+    else svg.setAttribute('d',dir===-1?downPath:upPath);
+  });
+}
+
 /* ─── TABLE ─── */
 function buildTable(){
   const cfg=getCFG(currentStore);
-  const rows=DATA.filter(d=>d.o>0||d.ads>0.05).sort((a,b)=>b.np-a.np);
+  updateSortHeaders();
+  const filtered=DATA.filter(d=>d.o>0||d.ads>0.05);
+  const rows=applySort(filtered);
   const T=rows.reduce((a,d)=>({o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
   T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
   T.roas=T.ads>0?T.rev/T.ads:0; T.roi=T.ads>0?T.np/T.ads*100:0;
