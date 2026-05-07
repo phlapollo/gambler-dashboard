@@ -224,9 +224,23 @@
     .pt-cancel-btn{padding:5px 10px;font-size:11.5px;border-radius:5px;background:none;border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:border-color .15s}
     .pt-cancel-btn:hover{border-color:#9ca3af}
 
+    /* Column picker */
+    .cp-wrap{position:relative;margin-left:auto}
+    .cp-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;border:1.5px solid var(--border);background:none;font-size:11.5px;color:var(--text3);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .cp-btn:hover{border-color:#93c5fd;color:var(--accent);border-style:solid}
+    .cp-btn.cp-active{border-color:var(--accent-border);background:var(--accent-light);color:var(--accent);border-style:solid}
+    .cp-count{font-size:10px;background:#e5e7eb;color:var(--text2);border-radius:10px;padding:1px 6px;margin-left:2px;display:none}
+    .cp-count.show{display:inline;background:#fde68a;color:#92400e}
+    .cp-panel{position:absolute;top:calc(100% + 6px);right:0;z-index:1500;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:200px;overflow:hidden;display:none}
+    .cp-panel.open{display:block}
+    .cp-header{padding:9px 14px 7px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .cp-reset{font-size:10.5px;font-weight:500;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;text-transform:none;letter-spacing:0}
+    .cp-reset:hover{text-decoration:underline}
+
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.dr-panel{right:auto;left:0}}
   </style>
+  <style id="col-style"></style>
 </head>
 <body>
 
@@ -375,6 +389,15 @@
           Adicionar filtro
         </button>
         <div class="fp-panel" id="fp-panel"></div>
+      </div>
+      <!-- Column Picker -->
+      <div class="cp-wrap">
+        <button class="cp-btn" id="cp-btn" onclick="toggleColPicker(event)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Colunas
+          <span class="cp-count" id="cp-count"></span>
+        </button>
+        <div class="cp-panel" id="cp-panel"></div>
       </div>
     </div>
 
@@ -623,8 +646,8 @@ function switchStore(store){
   $('hdr-logo').textContent=cfg.letter;
   $('hdr-logo').className='logo'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('hdr-store-name').textContent=cfg.name;
-  $('th-fb').style.display=cfg.hasFb?'':'none';
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
+  applyColVisibility();
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
 
   refreshWithScale();
@@ -829,6 +852,84 @@ function updateSortHeaders(){
   });
 }
 
+/* ─── COLUMN PICKER ─── */
+const COL_DEFS=[
+  {key:'o',    label:'Pedidos'},
+  {key:'rev',  label:'Receita'},
+  {key:'cog',  label:'COGS'},
+  {key:'fees', label:'Fees'},
+  {key:'gp',   label:'Lucro bruto'},
+  {key:'gm',   label:'Mg. bruta'},
+  {key:'g',    label:'Google Ads'},
+  {key:'fb',   label:'Facebook Ads', fbOnly:true},
+  {key:'np',   label:'Lucro líq.'},
+  {key:'nm',   label:'Mg. líq.'},
+  {key:'roas', label:'ROAS'},
+];
+const ALL_COLS=COL_DEFS.map(c=>c.key);
+let visibleCols=new Set(JSON.parse(localStorage.getItem('gbl_cols')||'null')||ALL_COLS);
+
+function saveVisibleCols(){localStorage.setItem('gbl_cols',JSON.stringify([...visibleCols]));}
+
+function applyColVisibility(){
+  const cfg=getCFG(currentStore);
+  let css='';
+  COL_DEFS.forEach(col=>{
+    const hide=!visibleCols.has(col.key)||(col.fbOnly&&!cfg.hasFb);
+    if(hide) css+=`th[data-col="${col.key}"],td[data-col="${col.key}"]{display:none!important}`;
+  });
+  document.getElementById('col-style').textContent=css;
+  // badge
+  const hidden=COL_DEFS.filter(c=>!visibleCols.has(c.key));
+  const badge=$('cp-count');
+  if(badge){badge.textContent=hidden.length||'';badge.className='cp-count'+(hidden.length?' show':'');}
+  const btn=$('cp-btn');
+  if(btn) btn.className='cp-btn'+(hidden.length?' cp-active':'');
+}
+
+let cpOpen=false;
+function toggleColPicker(e){
+  e.stopPropagation();
+  cpOpen=!cpOpen;
+  const panel=$('cp-panel');
+  if(cpOpen){renderColPickerPanel();panel.classList.add('open');}
+  else panel.classList.remove('open');
+}
+
+function renderColPickerPanel(){
+  const cfg=getCFG(currentStore);
+  const panel=$('cp-panel');
+  let html=`<div class="cp-header">Colunas visíveis<button class="cp-reset" onclick="resetCols()">Restaurar</button></div>`;
+  COL_DEFS.forEach(col=>{
+    if(col.fbOnly&&!cfg.hasFb) return;
+    const on=visibleCols.has(col.key);
+    html+=`<button class="fp-opt${on?' fp-selected':''}" onclick="toggleCol('${col.key}')"><span class="fp-check"></span>${col.label}</button>`;
+  });
+  panel.innerHTML=html;
+}
+
+function toggleCol(key){
+  // always keep at least 1 col visible
+  if(visibleCols.has(key)&&visibleCols.size<=1) return;
+  if(visibleCols.has(key)) visibleCols.delete(key); else visibleCols.add(key);
+  saveVisibleCols();
+  applyColVisibility();
+  renderColPickerPanel();
+}
+
+function resetCols(){
+  visibleCols=new Set(ALL_COLS);
+  saveVisibleCols();
+  applyColVisibility();
+  renderColPickerPanel();
+}
+
+document.addEventListener('click',e=>{
+  if(cpOpen&&!e.target.closest('#cp-panel')&&!e.target.closest('#cp-btn')){
+    cpOpen=false;$('cp-panel').classList.remove('open');
+  }
+});
+
 /* ─── FILTERS ─── */
 const FILTER_DEFS=[
   {key:'resultado',label:'Resultado',opts:[
@@ -951,41 +1052,43 @@ function buildTable(){
   T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
   T.roas=T.ads>0?T.rev/T.ads:0; T.roi=T.ads>0?T.np/T.ads*100:0;
 
-  const fbHide=cfg.hasFb?'':' style="display:none"';
-
   const html=rows.map((d)=>{
     const ns=d.o===0;
     const npCls=d.np>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
     const nmCls=d.nm>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
     return `<tr>
-      <td>${d.p}${ns?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>
-      <td class="${d.o===0?'tv-muted':''}">${d.o||'—'}</td>
-      <td>${d.rev>0?usd(d.rev):'—'}</td>
-      <td class="tv-muted">${d.cog>0?usd(d.cog):'—'}</td>
-      <td class="tv-muted">${d.fees>0?usd(d.fees):'—'}</td>
-      <td>${d.gp>0?usd(d.gp):'—'}</td>
-      <td>${d.gm>0?`<span class="tpill ${pcls(d.gm,50,65)}">${pct(d.gm)}</span>`:'—'}</td>
-      <td class="tv-muted">${d.g>0?usd(d.g):'—'}</td>
-      <td class="tv-muted"${fbHide}>${d.fb>0?usd(d.fb):'—'}</td>
-      <td class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>
-      <td class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
-      <td>${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>
+      <td data-col="p">${d.p}${ns?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>
+      <td data-col="o" class="${d.o===0?'tv-muted':''}">${d.o||'—'}</td>
+      <td data-col="rev">${d.rev>0?usd(d.rev):'—'}</td>
+      <td data-col="cog" class="tv-muted">${d.cog>0?usd(d.cog):'—'}</td>
+      <td data-col="fees" class="tv-muted">${d.fees>0?usd(d.fees):'—'}</td>
+      <td data-col="gp">${d.gp>0?usd(d.gp):'—'}</td>
+      <td data-col="gm">${d.gm>0?`<span class="tpill ${pcls(d.gm,50,65)}">${pct(d.gm)}</span>`:'—'}</td>
+      <td data-col="g" class="tv-muted">${d.g>0?usd(d.g):'—'}</td>
+      <td data-col="fb" class="tv-muted">${d.fb>0?usd(d.fb):'—'}</td>
+      <td data-col="np" class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>
+      <td data-col="nm" class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
+      <td data-col="roas">${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>
     </tr>`;
   }).join('');
 
   const totRow=`<tr class="tr-total">
-    <td>Total</td><td>${T.o}</td><td>${usd(T.rev)}</td>
-    <td class="tv-muted">${usd(T.cog)}</td><td class="tv-muted">${usd(T.fees)}</td>
-    <td>${usd(T.gp)}</td>
-    <td><span class="tpill ${pcls(T.gm,50,65)}">${pct(T.gm)}</span></td>
-    <td class="tv-muted">${usd(T.g)}</td>
-    <td class="tv-muted"${fbHide}>${usd(T.fb)}</td>
-    <td class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>
-    <td><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>
-    <td><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>
+    <td data-col="p">Total</td>
+    <td data-col="o">${T.o}</td>
+    <td data-col="rev">${usd(T.rev)}</td>
+    <td data-col="cog" class="tv-muted">${usd(T.cog)}</td>
+    <td data-col="fees" class="tv-muted">${usd(T.fees)}</td>
+    <td data-col="gp">${usd(T.gp)}</td>
+    <td data-col="gm"><span class="tpill ${pcls(T.gm,50,65)}">${pct(T.gm)}</span></td>
+    <td data-col="g" class="tv-muted">${usd(T.g)}</td>
+    <td data-col="fb" class="tv-muted">${usd(T.fb)}</td>
+    <td data-col="np" class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>
+    <td data-col="nm"><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>
+    <td data-col="roas"><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>
   </tr>`;
 
   $('tbody').innerHTML=html+totRow;
+  applyColVisibility();
 }
 
 /* ─── DATE RANGE PICKER ─── */
