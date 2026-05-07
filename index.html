@@ -159,6 +159,17 @@
     .dr-apply{padding:7px 16px;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;background:var(--accent);border:none;color:#fff}
     .dr-apply:hover{background:#1e40af}
     .dr-scale-note{font-size:10.5px;color:var(--text3);text-align:right;margin-top:-6px}
+    .dr-divider{height:1px;background:var(--border);margin:6px 10px}
+    .dr-day-nav{display:flex;gap:6px;margin-top:10px}
+    .dr-day-arrow{flex:1;padding:6px 0;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;color:var(--text2);transition:all .15s}
+    .dr-day-arrow:hover{border-color:#93c5fd;color:var(--accent)}
+    .estimate-banner{
+      display:none;align-items:center;gap:8px;margin-bottom:14px;
+      background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;
+      font-size:12px;color:#92400e
+    }
+    .estimate-banner.show{display:flex}
+    .estimate-banner svg{flex-shrink:0}
 
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.dr-panel{right:auto;left:0}}
@@ -197,17 +208,33 @@
             <button class="dr-preset" data-preset="14" onclick="applyPreset(14)">Últimos 14 dias</button>
             <button class="dr-preset" data-preset="21" onclick="applyPreset(21)">Últimos 21 dias</button>
             <button class="dr-preset" data-preset="30" onclick="applyPreset(30)">Últimos 30 dias</button>
+            <div class="dr-divider"></div>
+            <button class="dr-preset" data-preset="day" onclick="setDayMode()">Dia específico</button>
           </div>
           <div class="dr-right">
-            <div class="dr-inputs">
-              <div class="dr-field">
-                <label>De</label>
-                <input type="date" id="dr-from">
+            <!-- Range mode -->
+            <div id="dr-mode-range">
+              <div class="dr-inputs">
+                <div class="dr-field">
+                  <label>De</label>
+                  <input type="date" id="dr-from">
+                </div>
+                <div class="dr-sep">→</div>
+                <div class="dr-field">
+                  <label>Até</label>
+                  <input type="date" id="dr-to">
+                </div>
               </div>
-              <div class="dr-sep">→</div>
-              <div class="dr-field">
-                <label>Até</label>
-                <input type="date" id="dr-to">
+            </div>
+            <!-- Day mode -->
+            <div id="dr-mode-day" style="display:none">
+              <div class="dr-field" style="max-width:180px">
+                <label>Selecionar dia</label>
+                <input type="date" id="dr-day">
+              </div>
+              <div class="dr-day-nav">
+                <button class="dr-day-arrow" onclick="shiftDay(-1)">‹ Anterior</button>
+                <button class="dr-day-arrow" onclick="shiftDay(1)">Próximo ›</button>
               </div>
             </div>
             <div class="dr-scale-note" id="dr-scale-note"></div>
@@ -234,6 +261,12 @@
   <div class="kpi-grid" id="kpi-grid"></div>
 
   <!-- Table -->
+  <!-- Estimate warning -->
+  <div class="estimate-banner" id="estimate-banner">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="estimate-banner-text">Dados estimados proporcionalmente — não há breakdown diário nos CSVs importados. Os valores são uma média uniforme do período total.</span>
+  </div>
+
   <div class="table-card">
     <div class="table-header">
       <div class="chart-title">Todos os produtos com atividade</div>
@@ -476,6 +509,7 @@ function switchStore(store){
   currentStore=store;
   // Reset date range on store switch
   drState={preset:'all',start:null,end:null};
+  drMode='range';
   updateDRUI();
 
   const cfg=getCFG(store);
@@ -699,6 +733,8 @@ const toISO=d=>d.toISOString().slice(0,10);
 const fromISO=s=>{const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);};
 const daysBetween=(a,b)=>Math.round((b-a)/86400000)+1;
 
+let drMode='range'; // 'range' | 'day'
+
 function toggleDR(){
   const p=$('dr-panel');
   p.classList.toggle('open');
@@ -706,8 +742,43 @@ function toggleDR(){
 }
 function closeDR(){$('dr-panel').classList.remove('open');}
 
+function setDayMode(){
+  drMode='day';
+  $('dr-mode-range').style.display='none';
+  $('dr-mode-day').style.display='';
+  const cfg=getCFG(currentStore);
+  const dayEl=$('dr-day');
+  dayEl.min=toISO(cfg.periodStart);
+  dayEl.max=toISO(cfg.periodEnd);
+  // default to last day of store period
+  dayEl.value=drState.start&&drState.start>=cfg.periodStart&&drState.start<=cfg.periodEnd
+    ? toISO(drState.start) : toISO(cfg.periodEnd);
+  document.querySelectorAll('.dr-preset').forEach(b=>b.classList.toggle('dp-active',b.dataset.preset==='day'));
+  updateScaleNote();
+}
+
+function setRangeMode(){
+  drMode='range';
+  $('dr-mode-day').style.display='none';
+  $('dr-mode-range').style.display='';
+}
+
+function shiftDay(delta){
+  const cfg=getCFG(currentStore);
+  const dayEl=$('dr-day');
+  const cur=fromISO(dayEl.value||toISO(cfg.periodEnd));
+  const next=new Date(cur.getTime()+delta*86400000);
+  const clamped=new Date(Math.min(Math.max(next,cfg.periodStart),cfg.periodEnd));
+  dayEl.value=toISO(clamped);
+  updateScaleNote();
+}
+
 function syncDRInputs(){
   const cfg=getCFG(currentStore);
+  if(drMode==='day'){
+    setDayMode(); return;
+  }
+  setRangeMode();
   const from=$('dr-from'), to=$('dr-to');
   from.min=to.min=toISO(cfg.periodStart);
   from.max=to.max=toISO(cfg.periodEnd);
@@ -718,17 +789,25 @@ function syncDRInputs(){
 
 function updateScaleNote(){
   const cfg=getCFG(currentStore);
-  const from=$('dr-from').value, to=$('dr-to').value;
-  if(!from||!to){$('dr-scale-note').textContent='';return;}
-  const s=fromISO(from), e=fromISO(to);
-  if(s>e){$('dr-scale-note').textContent='';return;}
-  const days=daysBetween(s,e);
-  const pct=Math.round(days/cfg.totalDays*100);
-  $('dr-scale-note').textContent=`${days} dias · ${pct}% do período total (${cfg.totalDays}d)`;
+  let days,label;
+  if(drMode==='day'){
+    const v=$('dr-day').value;
+    if(!v){$('dr-scale-note').textContent='';return;}
+    days=1;
+    label=`${fmtPT(fromISO(v))} · estimativa proporcional (1 de ${cfg.totalDays} dias)`;
+  } else {
+    const from=$('dr-from').value, to=$('dr-to').value;
+    if(!from||!to){$('dr-scale-note').textContent='';return;}
+    const s=fromISO(from), e=fromISO(to);
+    if(s>e){$('dr-scale-note').textContent='';return;}
+    days=daysBetween(s,e);
+    const p=Math.round(days/cfg.totalDays*100);
+    label=`${days} dia${days>1?'s':''} · ${p}% do período (${cfg.totalDays}d)`;
+  }
+  $('dr-scale-note').textContent=label;
 }
 
 function updateDRUI(){
-  // Button label
   const cfg=getCFG(currentStore);
   if(!drState.start||!drState.end){
     $('dr-label').textContent=cfg.period;
@@ -736,9 +815,12 @@ function updateDRUI(){
     const s=new Date(Math.max(drState.start,cfg.periodStart));
     const e=new Date(Math.min(drState.end,cfg.periodEnd));
     const days=daysBetween(s,e);
-    $('dr-label').textContent=`${fmtPT(s)} – ${fmtPT(e)}  (${days}d)`;
+    if(days===1){
+      $('dr-label').textContent=`${fmtPT(s)} (1 dia)`;
+    } else {
+      $('dr-label').textContent=`${fmtPT(s)} – ${fmtPT(e)} (${days}d)`;
+    }
   }
-  // Active preset highlight
   document.querySelectorAll('.dr-preset').forEach(b=>{
     b.classList.toggle('dp-active', b.dataset.preset===String(drState.preset));
   });
@@ -747,6 +829,8 @@ function updateDRUI(){
 function applyPreset(p){
   const cfg=getCFG(currentStore);
   drState.preset=p;
+  drMode='range';
+  setRangeMode();
   if(p==='all'){
     drState.start=null; drState.end=null;
   } else {
@@ -762,11 +846,19 @@ function applyPreset(p){
 }
 
 function applyCustomDR(){
-  const from=$('dr-from').value, to=$('dr-to').value;
-  if(!from||!to) return;
-  drState.start=fromISO(from);
-  drState.end=fromISO(to);
-  drState.preset='custom';
+  if(drMode==='day'){
+    const v=$('dr-day').value;
+    if(!v) return;
+    drState.start=fromISO(v);
+    drState.end=fromISO(v);
+    drState.preset='day';
+  } else {
+    const from=$('dr-from').value, to=$('dr-to').value;
+    if(!from||!to) return;
+    drState.start=fromISO(from);
+    drState.end=fromISO(to);
+    drState.preset='custom';
+  }
   closeDR();
   updateDRUI();
   refreshWithScale();
@@ -808,9 +900,24 @@ function refreshWithScale(){
   DATA=applyScale(raw,factor);
 
   // Header
-  $('hdr-sub').textContent='Visão geral de produtos · '+($('dr-label').textContent);
+  const lbl=$('dr-label').textContent;
+  $('hdr-sub').textContent='Visão geral de produtos · '+lbl;
   $('hdr-badges').innerHTML=`<span class="badge">${Math.round(cfg.orders*factor)} pedidos · ${DATA.filter(d=>d.o>0).length} produtos</span>`;
-  $('footer').textContent=`${cfg.name} · ${$('dr-label').textContent} · 1 USD = €${cfg.fx.toFixed(4)}`;
+  $('footer').textContent=`${cfg.name} · ${lbl} · 1 USD = €${cfg.fx.toFixed(4)}`;
+
+  // Estimate banner: show when period < totalDays
+  const selDays=drState.start&&drState.end ? daysBetween(
+    new Date(Math.max(drState.start,cfg.periodStart)),
+    new Date(Math.min(drState.end,cfg.periodEnd))
+  ) : cfg.totalDays;
+  const isEstimate=selDays<cfg.totalDays;
+  const banner=$('estimate-banner');
+  banner.classList.toggle('show', isEstimate);
+  if(isEstimate){
+    $('estimate-banner-text').textContent=selDays===1
+      ? `Visualização estimada para ${lbl} — os dados são distribuídos uniformemente sobre os ${cfg.totalDays} dias do período. Valores absolutos ÷ ${cfg.totalDays}. Margens e ROAS são iguais ao período completo.`
+      : `Estimativa proporcional: ${selDays} de ${cfg.totalDays} dias (${Math.round(selDays/cfg.totalDays*100)}%). Dados reais diários não estão disponíveis nos CSVs importados.`;
+  }
 
   buildKPIs();
   destroyCharts();
