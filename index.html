@@ -834,23 +834,11 @@ function updateSortHeaders(){
 
 /* ─── FILTERS ─── */
 const FILTER_DEFS=[
-  {key:'atividade',label:'Atividade',opts:[
-    {label:'Todos os produtos',      fn:()=>true},
-    {label:'Com atividade',          fn:d=>d.o>0||d.ads>0.05},
-    {label:'Com vendas',             fn:d=>d.o>0},
-    {label:'Sem vendas',             fn:d=>d.o===0},
-  ]},
   {key:'resultado',label:'Resultado',opts:[
     {label:'Qualquer',               fn:()=>true},
     {label:'Lucro  (líq. > 0)',      fn:d=>d.np>0},
     {label:'Prejuízo  (líq. < 0)',   fn:d=>d.np<0},
     {label:'Break-even  (líq. = 0)', fn:d=>d.np===0},
-  ]},
-  {key:'margem',label:'Margem líq.',opts:[
-    {label:'Qualquer',               fn:()=>true},
-    {label:'Acima de 20%',           fn:d=>d.nm!==null&&d.nm>20},
-    {label:'0% a 20%',               fn:d=>d.nm!==null&&d.nm>=0&&d.nm<=20},
-    {label:'Negativa  (< 0%)',       fn:d=>d.nm!==null&&d.nm<0},
   ]},
   {key:'roas',label:'ROAS',opts:[
     {label:'Qualquer',               fn:()=>true},
@@ -859,18 +847,10 @@ const FILTER_DEFS=[
     {label:'Baixo  (< 2x)',          fn:d=>d.ads>0&&d.roas<2},
     {label:'Sem investimento em ads',fn:d=>d.ads===0},
   ]},
-  {key:'ads',label:'Fonte de ads',opts:[
-    {label:'Qualquer',               fn:()=>true},
-    {label:'Com Google Ads',         fn:d=>d.g>0},
-    {label:'Com Facebook Ads',       fn:d=>d.fb>0},
-    {label:'Sem ads',                fn:d=>d.ads===0},
-  ]},
 ];
 
 // { key → { label, optIdx } }; fn is retrieved live from FILTER_DEFS
-let activeFilters={
-  atividade:{label:'Com atividade', optIdx:1}
-};
+let activeFilters={};
 let fpView='cats'; // 'cats' | 'opts'
 let fpCatKey=null;
 
@@ -879,7 +859,8 @@ function getFilterFn(key,optIdx){
 }
 
 function filterRows(rows){
-  return rows.filter(d=>
+  // Sempre exclui produtos sem nenhuma atividade (sem vendas e sem ads)
+  return rows.filter(d=>d.o>0||d.ads>0.05).filter(d=>
     Object.entries(activeFilters).every(([k,f])=>getFilterFn(k,f.optIdx)(d))
   );
 }
