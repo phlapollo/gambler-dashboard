@@ -1272,8 +1272,7 @@ function renderTarget(){
   $('pt-pace').textContent='';
 
   // Always show which month is being tracked (never affected by date filter)
-  $('pt-period-warn').style.display='';
-  $('pt-period-warn').textContent=`Rastreando ${monthName} · renova em 1° do próximo mês`;
+  $('pt-period-warn').style.display='none';
 }
 
 // Allow Enter key to save target
