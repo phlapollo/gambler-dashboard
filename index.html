@@ -638,9 +638,12 @@ function onGoogleSignIn(response){
 function showApp(user){
   document.getElementById('login-overlay').style.display='none';
   document.getElementById('app').style.display='';
+  const avatarHtml=user.picture
+    ?`<img class="user-avatar" src="${user.picture}" alt="${user.name}" referrerpolicy="no-referrer">`
+    :`<div class="user-avatar" style="background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px">${(user.name||'A')[0]}</div>`;
   document.getElementById('user-menu').innerHTML=
-    `<img class="user-avatar" src="${user.picture}" alt="${user.name}" referrerpolicy="no-referrer">`+
-    `<span class="user-name">${user.name.split(' ')[0]}</span>`+
+    avatarHtml+
+    `<span class="user-name">${(user.name||'Admin').split(' ')[0]}</span>`+
     `<button class="btn-signout" onclick="signOut()">Sair</button>`;
   switchStore('colosy');
 }
@@ -654,6 +657,12 @@ function signOut(){
 }
 
 window.addEventListener('load',()=>{
+  // Se não houver Client ID real configurado, abre o app diretamente
+  if(CLIENT_ID.startsWith('SEU_CLIENT_ID')){
+    showApp({name:'Admin',email:'',picture:''});
+    return;
+  }
+
   const saved=sessionStorage.getItem('gbl_user');
   if(saved){showApp(JSON.parse(saved));return;}
 
