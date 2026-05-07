@@ -1192,7 +1192,8 @@ function refreshWithScale(){
 
 /* ─── PROFIT TARGET ─── */
 function targetKey(){return 'gbl_target_'+currentStore;}
-function getTarget(){const v=localStorage.getItem(targetKey());return v?+v:null;}
+const DEFAULT_TARGETS={colosy:12000,renazi:10500,modeline:12000};
+function getTarget(){const v=localStorage.getItem(targetKey());return v?+v:(DEFAULT_TARGETS[currentStore]||null);}
 
 function openTargetEdit(){
   $('pt-empty').style.display='none';
