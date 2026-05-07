@@ -93,6 +93,35 @@
     /* Table */
     .table-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
     .table-header{padding:16px 22px 12px;border-bottom:1px solid var(--border)}
+
+    /* Filter Bar */
+    .filter-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--border);background:var(--surface2)}
+    .filter-bar-label{font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-right:2px}
+    .filter-chip{display:inline-flex;align-items:center;gap:0;padding:0;border-radius:20px;border:1.5px solid var(--accent-border);background:var(--accent-light);font-size:11.5px;color:var(--accent);white-space:nowrap;overflow:hidden}
+    .filter-chip-label{padding:4px 8px 4px 11px;cursor:pointer;transition:background .1s}
+    .filter-chip-label:hover{background:rgba(59,130,246,.08)}
+    .filter-chip-remove{background:none;border:none;border-left:1.5px solid var(--accent-border);cursor:pointer;color:var(--accent);font-size:14px;line-height:1;padding:4px 8px;transition:background .1s}
+    .filter-chip-remove:hover{background:rgba(59,130,246,.12)}
+    .filter-add-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;border:1.5px dashed var(--border);background:none;font-size:11.5px;color:var(--text3);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .filter-add-btn:hover{border-color:#93c5fd;color:var(--accent);border-style:solid}
+    .filter-count{font-size:10px;background:var(--accent);color:#fff;border-radius:10px;padding:1px 5px;margin-left:3px}
+
+    /* Filter Panel */
+    .fp-wrap{position:relative}
+    .fp-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:1500;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:210px;overflow:hidden;display:none}
+    .fp-panel.open{display:block}
+    .fp-header{padding:9px 14px 7px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border)}
+    .fp-cat{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;font-size:12.5px;color:var(--text);cursor:pointer;transition:background .1s;user-select:none}
+    .fp-cat:hover{background:var(--surface2)}
+    .fp-cat-has{font-size:10.5px;color:var(--accent);font-weight:500;background:var(--accent-light);padding:1px 7px;border-radius:10px}
+    .fp-back{display:flex;align-items:center;gap:5px;padding:8px 14px;font-size:11.5px;color:var(--text3);cursor:pointer;border-bottom:1px solid var(--border);transition:color .1s}
+    .fp-back:hover{color:var(--text)}
+    .fp-cat-title{padding:8px 14px 5px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);border-bottom:1px solid var(--border)}
+    .fp-opt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:9px 14px;font-size:12.5px;color:var(--text2);background:none;border:none;cursor:pointer;transition:background .1s}
+    .fp-opt:hover{background:var(--surface2);color:var(--text)}
+    .fp-opt.fp-selected{color:var(--accent);font-weight:500}
+    .fp-check{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;transition:all .1s}
+    .fp-opt.fp-selected .fp-check{background:var(--accent);border-color:var(--accent);background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:10px}
     .tscroll{overflow-x:auto}
     table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
     thead{background:var(--surface2)}
@@ -338,6 +367,19 @@
       <div class="chart-title">Todos os produtos com atividade</div>
       <div class="chart-sub" style="margin-top:3px;font-size:11.5px;color:var(--text2)">Receita, COGS, Fees, Lucro bruto/líquido, Margem, ROAS e ROI em USD</div>
     </div>
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filter-bar">
+      <span class="filter-bar-label">Filtros</span>
+      <div id="filter-chips" style="display:contents"></div>
+      <div class="fp-wrap">
+        <button class="filter-add-btn" id="filter-add-btn" onclick="toggleFP(event)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar filtro
+        </button>
+        <div class="fp-panel" id="fp-panel"></div>
+      </div>
+    </div>
+
     <div class="tscroll">
       <table>
         <thead>
@@ -790,11 +832,142 @@ function updateSortHeaders(){
   });
 }
 
+/* ─── FILTERS ─── */
+const FILTER_DEFS=[
+  {key:'atividade',label:'Atividade',opts:[
+    {label:'Todos os produtos',      fn:()=>true},
+    {label:'Com atividade',          fn:d=>d.o>0||d.ads>0.05},
+    {label:'Com vendas',             fn:d=>d.o>0},
+    {label:'Sem vendas',             fn:d=>d.o===0},
+  ]},
+  {key:'resultado',label:'Resultado',opts:[
+    {label:'Qualquer',               fn:()=>true},
+    {label:'Lucro  (líq. > 0)',      fn:d=>d.np>0},
+    {label:'Prejuízo  (líq. < 0)',   fn:d=>d.np<0},
+    {label:'Break-even  (líq. = 0)', fn:d=>d.np===0},
+  ]},
+  {key:'margem',label:'Margem líq.',opts:[
+    {label:'Qualquer',               fn:()=>true},
+    {label:'Acima de 20%',           fn:d=>d.nm!==null&&d.nm>20},
+    {label:'0% a 20%',               fn:d=>d.nm!==null&&d.nm>=0&&d.nm<=20},
+    {label:'Negativa  (< 0%)',       fn:d=>d.nm!==null&&d.nm<0},
+  ]},
+  {key:'roas',label:'ROAS',opts:[
+    {label:'Qualquer',               fn:()=>true},
+    {label:'Excelente  (≥ 3x)',      fn:d=>d.roas>=3},
+    {label:'Bom  (≥ 2x e < 3x)',     fn:d=>d.roas>=2&&d.roas<3},
+    {label:'Baixo  (< 2x)',          fn:d=>d.ads>0&&d.roas<2},
+    {label:'Sem investimento em ads',fn:d=>d.ads===0},
+  ]},
+  {key:'ads',label:'Fonte de ads',opts:[
+    {label:'Qualquer',               fn:()=>true},
+    {label:'Com Google Ads',         fn:d=>d.g>0},
+    {label:'Com Facebook Ads',       fn:d=>d.fb>0},
+    {label:'Sem ads',                fn:d=>d.ads===0},
+  ]},
+];
+
+// { key → { label, optIdx } }; fn is retrieved live from FILTER_DEFS
+let activeFilters={
+  atividade:{label:'Com atividade', optIdx:1}
+};
+let fpView='cats'; // 'cats' | 'opts'
+let fpCatKey=null;
+
+function getFilterFn(key,optIdx){
+  return FILTER_DEFS.find(d=>d.key===key).opts[optIdx].fn;
+}
+
+function filterRows(rows){
+  return rows.filter(d=>
+    Object.entries(activeFilters).every(([k,f])=>getFilterFn(k,f.optIdx)(d))
+  );
+}
+
+function toggleFP(e){
+  e&&e.stopPropagation();
+  const p=$('fp-panel');
+  if(p.classList.contains('open')){closeFP();return;}
+  fpView='cats'; renderFP(); p.classList.add('open');
+}
+function closeFP(){$('fp-panel').classList.remove('open');}
+
+function renderFP(){
+  const p=$('fp-panel');
+  if(fpView==='cats'){
+    p.innerHTML=`<div class="fp-header">Adicionar / editar filtro</div>`+
+      FILTER_DEFS.map(def=>{
+        const active=activeFilters[def.key];
+        return `<div class="fp-cat" onclick="fpSelectCat('${def.key}')">
+          <span>${def.label}</span>
+          ${active?`<span class="fp-cat-has">${active.label}</span>`:'<span style="color:var(--text3);font-size:12px">›</span>'}
+        </div>`;
+      }).join('');
+  } else {
+    const def=FILTER_DEFS.find(d=>d.key===fpCatKey);
+    const cur=activeFilters[fpCatKey];
+    p.innerHTML=
+      `<div class="fp-back" onclick="fpGoBack()">‹ &nbsp;Filtros</div>`+
+      `<div class="fp-cat-title">${def.label}</div>`+
+      def.opts.map((o,i)=>{
+        const isSel=cur?cur.optIdx===i:(i===0);
+        return `<button class="fp-opt${isSel?' fp-selected':''}" onclick="applyFilter('${def.key}',${i})">
+          <span class="fp-check"></span>${o.label}
+        </button>`;
+      }).join('');
+  }
+}
+
+function fpSelectCat(key){fpCatKey=key;fpView='opts';renderFP();}
+function fpGoBack(){fpView='cats';renderFP();}
+
+function applyFilter(key,optIdx){
+  const def=FILTER_DEFS.find(d=>d.key===key);
+  if(optIdx===0){
+    delete activeFilters[key];
+  } else {
+    activeFilters[key]={label:def.opts[optIdx].label,optIdx};
+  }
+  closeFP();
+  renderFilterChips();
+  buildTable();
+}
+
+function removeFilter(key,e){
+  e&&e.stopPropagation();
+  delete activeFilters[key];
+  renderFilterChips();
+  buildTable();
+}
+
+function editFilter(key,e){
+  e&&e.stopPropagation();
+  fpCatKey=key; fpView='opts'; renderFP();
+  $('fp-panel').classList.add('open');
+}
+
+function renderFilterChips(){
+  const container=$('filter-chips');
+  const entries=Object.entries(activeFilters);
+  const defMap=Object.fromEntries(FILTER_DEFS.map(d=>[d.key,d.label]));
+  container.innerHTML=entries.map(([key,f])=>`
+    <div class="filter-chip">
+      <span class="filter-chip-label" onclick="editFilter('${key}',event)">${defMap[key]}: <strong>${f.label}</strong></span>
+      <button class="filter-chip-remove" title="Remover filtro" onclick="removeFilter('${key}',event)">×</button>
+    </div>`).join('');
+  // Update "Adicionar filtro" counter
+  const count=entries.length;
+  const btn=$('filter-add-btn');
+  const existing=btn.querySelector('.filter-count');
+  if(existing) existing.remove();
+  if(count>0) btn.insertAdjacentHTML('beforeend',`<span class="filter-count">${count}</span>`);
+}
+
 /* ─── TABLE ─── */
 function buildTable(){
   const cfg=getCFG(currentStore);
   updateSortHeaders();
-  const filtered=DATA.filter(d=>d.o>0||d.ads>0.05);
+  const filtered=filterRows(DATA);
   const rows=applySort(filtered);
   const T=rows.reduce((a,d)=>({o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
   T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
@@ -1032,6 +1205,7 @@ function refreshWithScale(){
 
   buildKPIs();
   renderTarget();
+  renderFilterChips();
   destroyCharts();
   buildRevNP();
   buildMargins();
@@ -1135,9 +1309,10 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&$('pt-edit').style.display!=='none') closeTargetEdit();
 });
 
-// Close picker on outside click
+// Close pickers on outside click
 document.addEventListener('click',e=>{
   if(!$('dr-wrap').contains(e.target)) closeDR();
+  if($('fp-panel')&&!$('fp-panel').parentElement.contains(e.target)) closeFP();
 });
 // Update scale note on date input change
 ['dr-from','dr-to'].forEach(id=>{
