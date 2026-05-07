@@ -96,12 +96,13 @@
     .tscroll{overflow-x:auto}
     table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
     thead{background:var(--surface2)}
-    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:color .15s}
+    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:color .15s,background-color .15s}
     th:hover{color:var(--text2)}
-    th.th-sorted{color:var(--accent)}
+    th:hover .sort-icon{opacity:.45}
+    th.th-sorted{color:var(--text);background:rgba(20,184,166,.05)}
     th:first-child{text-align:left}
     .th-inner{display:inline-flex;align-items:center;gap:4px}
-    .sort-icon{opacity:.3;transition:opacity .15s;flex-shrink:0}
+    .sort-icon{opacity:0;transition:opacity .15s;flex-shrink:0}
     th.th-sorted .sort-icon{opacity:1}
     td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
     td:first-child{text-align:left;font-weight:500;color:var(--text)}
@@ -170,6 +171,34 @@
     }
     .estimate-banner.show{display:flex}
     .estimate-banner svg{flex-shrink:0}
+
+    /* KPI delta */
+    .kpi-delta{font-size:11px;font-weight:400;margin-top:4px;margin-bottom:1px;line-height:1.3}
+    .kpi-delta-pos{color:var(--green)}
+    .kpi-delta-neg{color:var(--red)}
+    .kpi-delta-muted{color:var(--text3)}
+
+    /* Profit Target */
+    .pt-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow);padding:14px 20px;margin-bottom:14px}
+    .pt-empty{font-size:12.5px;color:var(--text3);cursor:pointer;transition:color .15s}
+    .pt-empty:hover{color:var(--accent);text-decoration:underline}
+    .pt-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .pt-col{display:flex;flex-direction:column;gap:2px}
+    .pt-lbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+    .pt-val{font-size:13px;font-weight:700;color:var(--text)}
+    .pt-val.editable{cursor:pointer;transition:color .15s}
+    .pt-val.editable:hover{color:var(--accent)}
+    .pt-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;position:relative;min-width:100px}
+    .pt-fill{height:100%;border-radius:3px;transition:width .4s ease,background-color .3s}
+    .pt-expected-line{position:absolute;top:-3px;width:2px;height:12px;background:rgba(0,0,0,.18);border-radius:1px;transform:translateX(-50%)}
+    .pt-pct{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap}
+    .pt-pace{font-size:10.5px;color:var(--text3);white-space:nowrap}
+    .pt-badge{font-size:10.5px;font-weight:600;color:#0d9488;background:#f0fdfa;border:1px solid #99f6e4;padding:3px 9px;border-radius:4px}
+    .pt-warn{font-size:10.5px;color:var(--amber);font-style:italic}
+    .pt-input{width:130px;border:1.5px solid #93c5fd;border-radius:6px;padding:5px 9px;font-size:13px;font-weight:700;outline:none;color:var(--text)}
+    .pt-save{padding:5px 12px;font-size:11.5px;font-weight:600;border-radius:5px;background:var(--accent);color:#fff;border:none;cursor:pointer}
+    .pt-cancel-btn{padding:5px 10px;font-size:11.5px;border-radius:5px;background:none;border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:border-color .15s}
+    .pt-cancel-btn:hover{border-color:#9ca3af}
 
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.dr-panel{right:auto;left:0}}
@@ -259,6 +288,43 @@
 
   <!-- KPI Cards -->
   <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- Profit Target -->
+  <div class="pt-card" id="pt-card">
+    <div class="pt-empty" id="pt-empty" onclick="openTargetEdit()">Definir meta mensal de lucro líquido →</div>
+    <div id="pt-set" style="display:none">
+      <div class="pt-row">
+        <div class="pt-col">
+          <div class="pt-lbl">Meta mensal</div>
+          <div class="pt-val editable" id="pt-target-val" onclick="openTargetEdit()"></div>
+        </div>
+        <div class="pt-track" style="flex:1;min-width:120px">
+          <div class="pt-fill" id="pt-fill"></div>
+          <div class="pt-expected-line" id="pt-expected-line"></div>
+        </div>
+        <div class="pt-col">
+          <div class="pt-lbl">Lucro atual</div>
+          <div class="pt-val" id="pt-current-val"></div>
+        </div>
+        <div class="pt-pct" id="pt-pct-val"></div>
+        <div class="pt-col">
+          <div class="pt-lbl">Faltam</div>
+          <div class="pt-val" id="pt-remaining"></div>
+        </div>
+        <div class="pt-pace" id="pt-pace"></div>
+        <div class="pt-badge" id="pt-achieved" style="display:none">Meta atingida 🎯</div>
+        <div class="pt-warn" id="pt-period-warn" style="display:none"></div>
+      </div>
+    </div>
+    <div id="pt-edit" style="display:none">
+      <div class="pt-row">
+        <div class="pt-lbl" style="align-self:center">Meta mensal de lucro (USD):</div>
+        <input type="number" class="pt-input" id="pt-input" placeholder="ex: 5000" min="0">
+        <button class="pt-save" onclick="saveTarget()">Salvar</button>
+        <button class="pt-cancel-btn" onclick="closeTargetEdit()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Table -->
   <!-- Estimate warning -->
@@ -525,6 +591,44 @@ function switchStore(store){
   refreshWithScale();
 }
 
+/* ─── PREVIOUS PERIOD COMPARISON ─── */
+function getRawTotals(factor){
+  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():computeModeline();
+  const d=applyScale(raw,factor);
+  const active=d.filter(x=>x.o>0||x.ads>0.05);
+  const T=active.reduce((a,x)=>({o:a.o+x.o,rev:a.rev+x.rev,gp:a.gp+x.gp,g:a.g+x.g,fb:a.fb+x.fb,np:a.np+x.np}),{o:0,rev:0,gp:0,g:0,fb:0,np:0});
+  T.ads=T.g+T.fb; T.gm=T.rev>0?T.gp/T.rev*100:0; T.nm=T.rev>0?T.np/T.rev*100:0; T.roas=T.ads>0?T.rev/T.ads:0;
+  return T;
+}
+function getPrevFactor(){
+  const cfg=getCFG(currentStore);
+  if(!drState.start||!drState.end) return null;
+  const s=new Date(Math.max(drState.start,cfg.periodStart));
+  const e=new Date(Math.min(drState.end,cfg.periodEnd));
+  if(s>e) return null;
+  const days=daysBetween(s,e);
+  const prevEnd=new Date(s.getTime()-86400000);
+  if(prevEnd<cfg.periodStart) return null;
+  const prevStart=new Date(prevEnd.getTime()-(days-1)*86400000);
+  const clampedStart=new Date(Math.max(prevStart,cfg.periodStart));
+  return daysBetween(clampedStart,prevEnd)/cfg.totalDays;
+}
+function deltaHtml(curr,prev,isPP){
+  if(prev===null||prev===undefined) return `<div class="kpi-delta kpi-delta-muted">— sem período anterior</div>`;
+  if(prev===0&&curr===0) return `<div class="kpi-delta kpi-delta-muted">— sem dados</div>`;
+  if(prev===0) return `<div class="kpi-delta kpi-delta-muted">—</div>`;
+  if(isPP){
+    const d=+(curr-prev).toFixed(1);
+    if(Math.abs(d)<0.05) return `<div class="kpi-delta kpi-delta-muted">→ igual ao anterior</div>`;
+    const cls=d>0?'kpi-delta-pos':'kpi-delta-neg';
+    return `<div class="kpi-delta ${cls}">${d>0?'↑':'↓'} ${d>0?'+':''}${d}pp vs. anterior</div>`;
+  }
+  const dp=+(((curr-prev)/Math.abs(prev))*100).toFixed(1);
+  if(Math.abs(dp)<0.05) return `<div class="kpi-delta kpi-delta-muted">→ igual ao anterior</div>`;
+  const cls=dp>0?'kpi-delta-pos':'kpi-delta-neg';
+  return `<div class="kpi-delta ${cls}">${dp>0?'↑':'↓'} ${dp>0?'+':''}${dp}% vs. anterior</div>`;
+}
+
 /* ─── KPI CARDS ─── */
 function buildKPIs(){
   const cfg=getCFG(currentStore);
@@ -533,18 +637,19 @@ function buildKPIs(){
     o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,
     fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np
   }),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
-  T.gm=T.rev>0?T.gp/T.rev*100:0;
-  T.ads=T.g+T.fb;
-  T.nm=T.rev>0?T.np/T.rev*100:0;
-  T.roas=T.ads>0?T.rev/T.ads:0;
+  T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0; T.roas=T.ads>0?T.rev/T.ads:0;
+
+  // Previous period
+  const pf=getPrevFactor();
+  const P=pf!==null?getRawTotals(pf):null;
 
   const cards=[
-    {label:'Receita total',value:usd(T.rev),sub:`€${Math.round(cfg.revEur).toLocaleString('en-US')} EUR`,color:'c-indigo'},
-    {label:'Lucro líquido',value:usd(T.np),pill:{v:T.nm,lo:0,hi:20},sub:'Margem líquida',color:'c-green'},
-    {label:'Lucro bruto',value:usd(T.gp),pill:{v:T.gm,lo:50,hi:65},sub:'Margem bruta',color:'c-blue'},
-    {label:'Total em Ads',value:usd(T.ads),sub:cfg.hasFb?'Google + Facebook':cfg.adsLabel||'Google Ads',color:'c-amber'},
-    {label:'ROAS',value:T.roas.toFixed(2)+'x',pill:{v:T.roas,lo:2,hi:3},sub:'Retorno sobre ads',color:'c-purple'},
-    {label:'Pedidos',value:T.o,sub:`${DATA.filter(d=>d.o>0).length} produtos com vendas`,color:'c-teal'},
+    {label:'Receita total',  value:usd(T.rev), delta:deltaHtml(T.rev,P?.rev,false),  sub:`€${Math.round(cfg.revEur).toLocaleString('en-US')} EUR`, color:'c-indigo'},
+    {label:'Lucro líquido',  value:usd(T.np),  delta:deltaHtml(T.np,P?.np,false),   pill:{v:T.nm,lo:0,hi:20},  sub:'Margem líquida', color:'c-green'},
+    {label:'Lucro bruto',    value:usd(T.gp),  delta:deltaHtml(T.gp,P?.gp,false),   pill:{v:T.gm,lo:50,hi:65}, sub:'Margem bruta',   color:'c-blue'},
+    {label:'Total em Ads',   value:usd(T.ads), delta:deltaHtml(T.ads,P?.ads,false),  sub:cfg.hasFb?'Google + Facebook':cfg.adsLabel||'Google Ads', color:'c-amber'},
+    {label:'ROAS',           value:T.roas.toFixed(2)+'x', delta:deltaHtml(T.roas,P?.roas,true), pill:{v:T.roas,lo:2,hi:3}, sub:'Retorno sobre ads', color:'c-purple'},
+    {label:'Pedidos',        value:T.o,        delta:deltaHtml(T.o,P?.o,false),      sub:`${DATA.filter(d=>d.o>0).length} produtos com vendas`, color:'c-teal'},
   ];
 
   const grid=$('kpi-grid');
@@ -556,6 +661,7 @@ function buildKPIs(){
       <div class="kpi-card ${c.color}">
         <div class="kpi-label">${c.label}</div>
         <div class="kpi-value">${c.value}</div>
+        ${c.delta}
         ${phtml}
         <div class="kpi-sub">${c.sub}</div>
       </div>`);
@@ -664,18 +770,23 @@ function applySort(rows){
 
 function updateSortHeaders(){
   const {col,dir}=sortState;
-  // SVG path: seta pra cima (asc) ou pra baixo (desc)
-  const upPath   ='M12 5v14M5 12l7-7 7 7';
-  const downPath ='M12 19V5M5 12l7 7 7-7';
-  const neutPath ='M12 5v14M5 12l7-7 7 7';
   document.querySelectorAll('#thead-row th').forEach(th=>{
     const c=th.dataset.col;
     const isActive=(c===col);
     th.classList.toggle('th-sorted',isActive);
-    const svg=th.querySelector('.sort-icon path');
+    const svg=th.querySelector('.sort-icon');
     if(!svg) return;
-    if(!isActive) svg.setAttribute('d',neutPath);
-    else svg.setAttribute('d',dir===-1?downPath:upPath);
+    if(isActive){
+      svg.removeAttribute('stroke');
+      svg.setAttribute('fill','none');
+      svg.innerHTML=dir===-1
+        ?`<polygon points="12,18 4,8 20,8" fill="#14b8a6"/>`
+        :`<polygon points="12,6 4,16 20,16" fill="#14b8a6"/>`;
+    } else {
+      svg.setAttribute('stroke','currentColor');
+      svg.setAttribute('stroke-width','2.5');
+      svg.innerHTML=`<path d="M8 9l4-4 4 4M8 15l4 4 4-4" fill="none"/>`;
+    }
   });
 }
 
@@ -920,12 +1031,94 @@ function refreshWithScale(){
   }
 
   buildKPIs();
+  renderTarget();
   destroyCharts();
   buildRevNP();
   buildMargins();
   buildAds();
   buildTable();
 }
+
+/* ─── PROFIT TARGET ─── */
+function targetKey(){return 'gbl_target_'+currentStore;}
+function getTarget(){const v=localStorage.getItem(targetKey());return v?+v:null;}
+
+function openTargetEdit(){
+  $('pt-empty').style.display='none';
+  $('pt-set').style.display='none';
+  $('pt-edit').style.display='';
+  const cur=getTarget();
+  $('pt-input').value=cur||'';
+  setTimeout(()=>$('pt-input').focus(),50);
+}
+function closeTargetEdit(){
+  $('pt-edit').style.display='none';
+  renderTarget();
+}
+function saveTarget(){
+  const v=+$('pt-input').value;
+  if(v>0) localStorage.setItem(targetKey(),v);
+  else localStorage.removeItem(targetKey());
+  closeTargetEdit();
+}
+function renderTarget(){
+  const target=getTarget();
+  $('pt-edit').style.display='none';
+  if(!target){
+    $('pt-empty').style.display='';
+    $('pt-set').style.display='none';
+    return;
+  }
+  $('pt-empty').style.display='none';
+  $('pt-set').style.display='';
+
+  // Current net profit from scaled DATA
+  const active=DATA.filter(d=>d.o>0||d.ads>0.05);
+  const actual=active.reduce((a,d)=>a+d.np,0);
+  const progPct=actual/target*100;
+  const cappedPct=Math.min(Math.max(progPct,0),100);
+
+  // Pace
+  const today=new Date();
+  const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+  const dayOfMonth=today.getDate();
+  const expectedPct=dayOfMonth/daysInMonth*100;
+  const paceRatio=expectedPct>0?progPct/expectedPct:1;
+  const achieved=progPct>=100;
+
+  // Bar color: pace-based
+  let barColor=achieved?'#14b8a6':paceRatio>=0.8?'#14b8a6':paceRatio>=0.5?'#f59e0b':'#ef4444';
+
+  $('pt-target-val').textContent=usd(target,true)+' / mês';
+  $('pt-fill').style.width=cappedPct+'%';
+  $('pt-fill').style.backgroundColor=barColor;
+  $('pt-expected-line').style.left=Math.min(expectedPct,100)+'%';
+  $('pt-current-val').textContent=usd(actual,true);
+  $('pt-pct-val').textContent=progPct.toFixed(1)+'% da meta';
+
+  const remaining=Math.max(0,target-actual);
+  $('pt-remaining').textContent=achieved?'—':usd(remaining,true);
+  $('pt-achieved').style.display=achieved?'':'none';
+
+  const daysLeft=daysInMonth-dayOfMonth;
+  if(daysLeft>0&&!achieved){
+    const dailyPace=remaining/daysLeft;
+    $('pt-pace').textContent=`Pace: ${usd(dailyPace,true)}/dia (${daysLeft}d restantes)`;
+  } else {
+    $('pt-pace').textContent=achieved?'':'Último dia do mês';
+  }
+
+  // Period warning
+  const isCustom=drState.start||drState.end;
+  $('pt-period-warn').style.display=isCustom?'':'none';
+  if(isCustom) $('pt-period-warn').textContent='Período customizado · meta calculada sobre o mês cheio';
+}
+
+// Allow Enter key to save target
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&$('pt-edit').style.display!=='none') saveTarget();
+  if(e.key==='Escape'&&$('pt-edit').style.display!=='none') closeTargetEdit();
+});
 
 // Close picker on outside click
 document.addEventListener('click',e=>{
