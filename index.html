@@ -1061,6 +1061,21 @@ function saveTarget(){
   else localStorage.removeItem(targetKey());
   closeTargetEdit();
 }
+function getCurrentMonthProfit(){
+  // Always computes net profit for the current calendar month (day 1 → today),
+  // regardless of whatever date range is selected in the main filter.
+  const cfg=getCFG(currentStore);
+  const today=new Date();
+  const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
+  // Overlap between [monthStart, today] and the store's data period
+  const overlapStart=new Date(Math.max(monthStart,cfg.periodStart));
+  const overlapEnd  =new Date(Math.min(today,cfg.periodEnd));
+  if(overlapStart>overlapEnd) return 0; // no data for current month
+  const days=daysBetween(overlapStart,overlapEnd);
+  const factor=days/cfg.totalDays;
+  return getRawTotals(factor).np;
+}
+
 function renderTarget(){
   const target=getTarget();
   $('pt-edit').style.display='none';
@@ -1072,22 +1087,21 @@ function renderTarget(){
   $('pt-empty').style.display='none';
   $('pt-set').style.display='';
 
-  // Current net profit from scaled DATA
-  const active=DATA.filter(d=>d.o>0||d.ads>0.05);
-  const actual=active.reduce((a,d)=>a+d.np,0);
-  const progPct=actual/target*100;
-  const cappedPct=Math.min(Math.max(progPct,0),100);
-
-  // Pace
+  // Always use current-month profit — never the filtered view
+  const actual=getCurrentMonthProfit();
   const today=new Date();
   const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
   const dayOfMonth=today.getDate();
+  const monthName=PT_M[today.getMonth()]+' '+today.getFullYear();
+
+  const progPct=actual/target*100;
+  const cappedPct=Math.min(Math.max(progPct,0),100);
   const expectedPct=dayOfMonth/daysInMonth*100;
   const paceRatio=expectedPct>0?progPct/expectedPct:1;
   const achieved=progPct>=100;
 
-  // Bar color: pace-based
-  let barColor=achieved?'#14b8a6':paceRatio>=0.8?'#14b8a6':paceRatio>=0.5?'#f59e0b':'#ef4444';
+  // Pace-based bar color
+  const barColor=achieved?'#14b8a6':paceRatio>=0.8?'#14b8a6':paceRatio>=0.5?'#f59e0b':'#ef4444';
 
   $('pt-target-val').textContent=usd(target,true)+' / mês';
   $('pt-fill').style.width=cappedPct+'%';
@@ -1103,15 +1117,16 @@ function renderTarget(){
   const daysLeft=daysInMonth-dayOfMonth;
   if(daysLeft>0&&!achieved){
     const dailyPace=remaining/daysLeft;
-    $('pt-pace').textContent=`Pace: ${usd(dailyPace,true)}/dia (${daysLeft}d restantes)`;
+    $('pt-pace').textContent=`Pace: ${usd(dailyPace,true)}/dia · ${daysLeft}d restantes em ${monthName}`;
+  } else if(achieved){
+    $('pt-pace').textContent='';
   } else {
-    $('pt-pace').textContent=achieved?'':'Último dia do mês';
+    $('pt-pace').textContent=`Último dia de ${monthName}`;
   }
 
-  // Period warning
-  const isCustom=drState.start||drState.end;
-  $('pt-period-warn').style.display=isCustom?'':'none';
-  if(isCustom) $('pt-period-warn').textContent='Período customizado · meta calculada sobre o mês cheio';
+  // Always show which month is being tracked (never affected by date filter)
+  $('pt-period-warn').style.display='';
+  $('pt-period-warn').textContent=`Rastreando ${monthName} · renova em 1° do próximo mês`;
 }
 
 // Allow Enter key to save target
