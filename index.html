@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,56 +115,13 @@
     .footer{margin-top:32px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.2px}
 
     /* User avatar in header */
-    .user-menu{display:flex;align-items:center;gap:10px}
-    .user-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--border)}
-    .user-name{font-size:12.5px;color:var(--text2);font-weight:500}
-    .btn-signout{
-      font-size:11.5px;font-weight:500;color:var(--text3);background:none;border:1px solid var(--border);
-      border-radius:6px;padding:5px 10px;cursor:pointer;transition:all .15s
-    }
-    .btn-signout:hover{color:var(--text);border-color:#9ca3af}
-
-    /* Login overlay */
-    #login-overlay{
-      position:fixed;inset:0;background:var(--bg);z-index:9999;
-      display:flex;align-items:center;justify-content:center
-    }
-    .login-card{
-      background:var(--surface);border:1px solid var(--border);border-radius:14px;
-      padding:48px 40px;width:100%;max-width:380px;text-align:center;
-      box-shadow:0 4px 24px rgba(0,0,0,.07)
-    }
-    .login-logo{
-      width:44px;height:44px;border-radius:10px;background:#1d4ed8;
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;font-weight:700;color:#fff;margin:0 auto 20px
-    }
-    .login-title{font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.3px}
-    .login-sub{font-size:13px;color:var(--text2);margin-top:6px;margin-bottom:32px;line-height:1.5}
-    .login-divider{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-    .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-    .login-divider span{font-size:11px;color:var(--text3)}
-    #g-signin-btn{display:flex;justify-content:center}
-    .login-footer{font-size:11px;color:var(--text3);margin-top:28px}
-
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
-    @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.login-card{padding:36px 24px}}
+    @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}}
   </style>
 </head>
 <body>
 
-<!-- Login Overlay -->
-<div id="login-overlay">
-  <div class="login-card">
-    <div class="login-logo">G</div>
-    <div class="login-title">Bem-vindo</div>
-    <div class="login-sub">Acesse o dashboard de P&amp;L<br>com sua conta Google autorizada.</div>
-    <div id="g-signin-btn"></div>
-    <div class="login-footer">Acesso restrito · apenas contas autorizadas</div>
-  </div>
-</div>
-
-<div class="layout" id="app" style="display:none">
+<div class="layout" id="app">
 
   <!-- Header -->
   <div class="header">
@@ -190,7 +146,6 @@
           <option value="modeline">Modeline</option>
         </select>
       </div>
-      <div class="user-menu" id="user-menu"></div>
     </div>
   </div>
 
@@ -618,63 +573,8 @@ function buildTable(){
   $('tbody').innerHTML=html+totRow;
 }
 
-/* ─── AUTH ─── */
-const CLIENT_ID='SEU_CLIENT_ID_AQUI.apps.googleusercontent.com';
-
-function parseJwt(token){
-  try{return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}
-  catch{return null;}
-}
-
-function onGoogleSignIn(response){
-  const payload=parseJwt(response.credential);
-  if(!payload)return;
-  sessionStorage.setItem('gbl_user',JSON.stringify({
-    name:payload.name,email:payload.email,picture:payload.picture
-  }));
-  showApp(payload);
-}
-
-function showApp(user){
-  document.getElementById('login-overlay').style.display='none';
-  document.getElementById('app').style.display='';
-  const avatarHtml=user.picture
-    ?`<img class="user-avatar" src="${user.picture}" alt="${user.name}" referrerpolicy="no-referrer">`
-    :`<div class="user-avatar" style="background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px">${(user.name||'A')[0]}</div>`;
-  document.getElementById('user-menu').innerHTML=
-    avatarHtml+
-    `<span class="user-name">${(user.name||'Admin').split(' ')[0]}</span>`+
-    `<button class="btn-signout" onclick="signOut()">Sair</button>`;
-  switchStore('colosy');
-}
-
-function signOut(){
-  sessionStorage.removeItem('gbl_user');
-  google.accounts.id.disableAutoSelect();
-  document.getElementById('app').style.display='none';
-  document.getElementById('user-menu').innerHTML='';
-  document.getElementById('login-overlay').style.display='flex';
-}
-
 window.addEventListener('load',()=>{
-  // Se não houver Client ID real configurado, abre o app diretamente
-  if(CLIENT_ID.startsWith('SEU_CLIENT_ID')){
-    showApp({name:'Admin',email:'',picture:''});
-    return;
-  }
-
-  const saved=sessionStorage.getItem('gbl_user');
-  if(saved){showApp(JSON.parse(saved));return;}
-
-  google.accounts.id.initialize({
-    client_id:CLIENT_ID,
-    callback:onGoogleSignIn,
-    auto_select:false,
-  });
-  google.accounts.id.renderButton(
-    document.getElementById('g-signin-btn'),
-    {theme:'outline',size:'large',text:'continue_with',shape:'rectangular',width:300,locale:'pt-BR'}
-  );
+  switchStore('colosy');
 });
 </script>
 </body>
