@@ -115,8 +115,48 @@
     .footer{margin-top:32px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.2px}
 
     /* User avatar in header */
+    /* ── Date Range Picker ── */
+    .dr-wrap{position:relative}
+    .dr-btn{
+      display:flex;align-items:center;gap:7px;padding:7px 12px 7px 10px;
+      border-radius:7px;border:1px solid var(--border);background:var(--surface);
+      cursor:pointer;font-size:12.5px;font-weight:500;color:var(--text);
+      box-shadow:var(--shadow);transition:border-color .15s;white-space:nowrap;user-select:none
+    }
+    .dr-btn:hover{border-color:#93c5fd}
+    .dr-btn svg{flex-shrink:0;color:var(--text3)}
+    .dr-panel{
+      position:absolute;right:0;top:calc(100% + 8px);z-index:2000;
+      background:var(--surface);border:1px solid var(--border);border-radius:10px;
+      box-shadow:0 8px 32px rgba(0,0,0,.12);display:none;flex-direction:row;overflow:hidden
+    }
+    .dr-panel.open{display:flex}
+    .dr-presets{padding:8px 0;border-right:1px solid var(--border);min-width:160px}
+    .dr-preset{
+      display:block;width:100%;text-align:left;padding:9px 18px;
+      font-size:12.5px;color:var(--text);background:none;border:none;cursor:pointer;transition:background .1s
+    }
+    .dr-preset:hover{background:var(--surface2)}
+    .dr-preset.dp-active{color:var(--accent);font-weight:600;background:var(--accent-light)}
+    .dr-right{padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:280px}
+    .dr-inputs{display:flex;gap:10px;align-items:flex-end}
+    .dr-field{display:flex;flex-direction:column;gap:5px;flex:1}
+    .dr-field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+    .dr-field input[type=date]{
+      border:1px solid var(--border);border-radius:6px;padding:7px 10px;
+      font-size:12.5px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;width:100%
+    }
+    .dr-field input[type=date]:focus{border-color:#93c5fd}
+    .dr-sep{font-size:18px;color:var(--text3);padding-bottom:6px}
+    .dr-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--border);padding-top:14px}
+    .dr-cancel{padding:7px 14px;font-size:12px;border-radius:6px;cursor:pointer;background:none;border:1px solid var(--border);color:var(--text2);transition:border-color .15s}
+    .dr-cancel:hover{border-color:#9ca3af}
+    .dr-apply{padding:7px 16px;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;background:var(--accent);border:none;color:#fff}
+    .dr-apply:hover{background:#1e40af}
+    .dr-scale-note{font-size:10.5px;color:var(--text3);text-align:right;margin-top:-6px}
+
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
-    @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}}
+    @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.dr-panel{right:auto;left:0}}
   </style>
 </head>
 <body>
@@ -138,6 +178,42 @@
         <span id="hdr-store-name">Colosy</span>
       </div>
       <div id="hdr-badges"></div>
+      <!-- Date Range Picker -->
+      <div class="dr-wrap" id="dr-wrap">
+        <div class="dr-btn" onclick="toggleDR()" id="dr-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="dr-label">Todo o período</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="dr-panel" id="dr-panel">
+          <div class="dr-presets">
+            <button class="dr-preset dp-active" data-preset="all" onclick="applyPreset('all')">Todo o período</button>
+            <button class="dr-preset" data-preset="7"  onclick="applyPreset(7)">Últimos 7 dias</button>
+            <button class="dr-preset" data-preset="14" onclick="applyPreset(14)">Últimos 14 dias</button>
+            <button class="dr-preset" data-preset="21" onclick="applyPreset(21)">Últimos 21 dias</button>
+            <button class="dr-preset" data-preset="30" onclick="applyPreset(30)">Últimos 30 dias</button>
+          </div>
+          <div class="dr-right">
+            <div class="dr-inputs">
+              <div class="dr-field">
+                <label>De</label>
+                <input type="date" id="dr-from">
+              </div>
+              <div class="dr-sep">→</div>
+              <div class="dr-field">
+                <label>Até</label>
+                <input type="date" id="dr-to">
+              </div>
+            </div>
+            <div class="dr-scale-note" id="dr-scale-note"></div>
+            <div class="dr-actions">
+              <button class="dr-cancel" onclick="closeDR()">Cancelar</button>
+              <button class="dr-apply" onclick="applyCustomDR()">Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="store-dropdown">
         <span class="store-label">Suas lojas</span>
         <select class="store-select" id="store-select" onchange="switchStore(this.value)">
@@ -242,7 +318,7 @@ const COLOSY_RAW=[
   {p:"Norway",       o:0,  rev:0,      cog:0,      fees:0,     gs:0.0003},
   {p:"Frostline",    o:0,  rev:0,      cog:0,      fees:0,     gs:0},
 ];
-const COLOSY_CFG={name:'Colosy',letter:'C',fx:0.8555,revEur:19906.41,googleUsd:8490.31,fbUsd:467.56,hasFb:true,orders:338,period:'15 abr–3 mai 2026'};
+const COLOSY_CFG={name:'Colosy',letter:'C',fx:0.8555,revEur:19906.41,googleUsd:8490.31,fbUsd:467.56,hasFb:true,orders:338,period:'15 abr–3 mai 2026',periodStart:new Date(2026,3,15),periodEnd:new Date(2026,4,3),totalDays:19};
 
 /* ─── RENAZI DATA ─── */
 const RENAZI_RAW=[
@@ -272,7 +348,7 @@ const RENAZI_RAW=[
   {p:"Ravello",      o:0,  rev:0,       cog:0,      fees:0,      g:3.04},
   {p:"Braxen",       o:0,  rev:0,       cog:0,      fees:0,      g:0.05},
 ];
-const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:10948.94,googleUsd:5943.40,fbUsd:0,hasFb:false,orders:217,period:'15 abr–3 mai 2026'};
+const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:10948.94,googleUsd:5943.40,fbUsd:0,hasFb:false,orders:217,period:'15 abr–3 mai 2026',periodStart:new Date(2026,3,15),periodEnd:new Date(2026,4,3),totalDays:19};
 
 /* ─── MODELINE DATA ─── */
 const MODELINE_RAW=[
@@ -300,12 +376,13 @@ const MODELINE_RAW=[
   {p:"Rawik",             o:  1,rev:   35.91,cog:  10.06,fees:   2.31,g:   7.25,fb:   0},
   {p:"Fjordwarm",         o:  0,rev:    0,   cog:    0,  fees:    0,  g:   0,   fb:  56.94},
 ];
-const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:47215.19,googleUsd:11152.19,fbUsd:8910.20,hasFb:true,orders:990,period:'1 abr–6 mai 2026'};
+const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:47215.19,googleUsd:11152.19,fbUsd:8910.20,hasFb:true,orders:990,period:'1 abr–6 mai 2026',periodStart:new Date(2026,3,1),periodEnd:new Date(2026,4,6),totalDays:36};
 
 /* ─── STATE ─── */
 let currentStore='colosy';
 let DATA=[];
 let charts={};
+let drState={preset:'all',start:null,end:null};
 
 /* ─── HELPERS ─── */
 const $=id=>document.getElementById(id);
@@ -381,39 +458,24 @@ function computeModeline(){
 
 /* ─── STORE SWITCH ─── */
 function getCFG(store){return store==='colosy'?COLOSY_CFG:store==='renazi'?RENAZI_CFG:MODELINE_CFG;}
+
 function switchStore(store){
   currentStore=store;
+  // Reset date range on store switch
+  drState={preset:'all',start:null,end:null};
+  updateDRUI();
+
   const cfg=getCFG(store);
-  DATA=store==='colosy'?computeColosy():store==='renazi'?computeRenazi():computeModeline();
-
-  // Dropdown sync
   $('store-select').value=store;
-
-  // Header logo + store indicator
   $('hdr-logo').textContent=cfg.letter;
   $('hdr-logo').className='logo'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
   $('hdr-store-name').textContent=cfg.name;
   $('hdr-dot').className='store-dot'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
-  $('hdr-sub').textContent='Visão geral de produtos · '+cfg.period;
-  $('hdr-badges').innerHTML=
-    `<span class="badge">${cfg.orders} pedidos · ${DATA.filter(d=>d.o>0).length} produtos</span>`;
-
-  // Facebook column visibility
   $('th-fb').style.display=cfg.hasFb?'':'none';
-
-  // Ads chart label
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
 
-  $('footer').textContent=`${cfg.name} · ${cfg.period} · 1 USD = €${cfg.fx.toFixed(4)}`;
-
-  // Rebuild
-  buildKPIs();
-  destroyCharts();
-  buildRevNP();
-  buildMargins();
-  buildAds();
-  buildTable();
+  refreshWithScale();
 }
 
 /* ─── KPI CARDS ─── */
@@ -572,6 +634,143 @@ function buildTable(){
 
   $('tbody').innerHTML=html+totRow;
 }
+
+/* ─── DATE RANGE PICKER ─── */
+const PT_M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const fmtPT=d=>d.getDate()+' '+PT_M[d.getMonth()];
+const toISO=d=>d.toISOString().slice(0,10);
+const fromISO=s=>{const p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);};
+const daysBetween=(a,b)=>Math.round((b-a)/86400000)+1;
+
+function toggleDR(){
+  const p=$('dr-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) syncDRInputs();
+}
+function closeDR(){$('dr-panel').classList.remove('open');}
+
+function syncDRInputs(){
+  const cfg=getCFG(currentStore);
+  const from=$('dr-from'), to=$('dr-to');
+  from.min=to.min=toISO(cfg.periodStart);
+  from.max=to.max=toISO(cfg.periodEnd);
+  from.value=toISO(drState.start||cfg.periodStart);
+  to.value  =toISO(drState.end  ||cfg.periodEnd);
+  updateScaleNote();
+}
+
+function updateScaleNote(){
+  const cfg=getCFG(currentStore);
+  const from=$('dr-from').value, to=$('dr-to').value;
+  if(!from||!to){$('dr-scale-note').textContent='';return;}
+  const s=fromISO(from), e=fromISO(to);
+  if(s>e){$('dr-scale-note').textContent='';return;}
+  const days=daysBetween(s,e);
+  const pct=Math.round(days/cfg.totalDays*100);
+  $('dr-scale-note').textContent=`${days} dias · ${pct}% do período total (${cfg.totalDays}d)`;
+}
+
+function updateDRUI(){
+  // Button label
+  const cfg=getCFG(currentStore);
+  if(!drState.start||!drState.end){
+    $('dr-label').textContent=cfg.period;
+  } else {
+    const s=new Date(Math.max(drState.start,cfg.periodStart));
+    const e=new Date(Math.min(drState.end,cfg.periodEnd));
+    const days=daysBetween(s,e);
+    $('dr-label').textContent=`${fmtPT(s)} – ${fmtPT(e)}  (${days}d)`;
+  }
+  // Active preset highlight
+  document.querySelectorAll('.dr-preset').forEach(b=>{
+    b.classList.toggle('dp-active', b.dataset.preset===String(drState.preset));
+  });
+}
+
+function applyPreset(p){
+  const cfg=getCFG(currentStore);
+  drState.preset=p;
+  if(p==='all'){
+    drState.start=null; drState.end=null;
+  } else {
+    drState.end=new Date(cfg.periodEnd);
+    drState.start=new Date(Math.max(
+      drState.end.getTime()-(p-1)*86400000,
+      cfg.periodStart.getTime()
+    ));
+  }
+  closeDR();
+  updateDRUI();
+  refreshWithScale();
+}
+
+function applyCustomDR(){
+  const from=$('dr-from').value, to=$('dr-to').value;
+  if(!from||!to) return;
+  drState.start=fromISO(from);
+  drState.end=fromISO(to);
+  drState.preset='custom';
+  closeDR();
+  updateDRUI();
+  refreshWithScale();
+}
+
+function getScaleFactor(){
+  const cfg=getCFG(currentStore);
+  if(!drState.start||!drState.end) return 1;
+  const s=new Date(Math.max(drState.start,cfg.periodStart));
+  const e=new Date(Math.min(drState.end,cfg.periodEnd));
+  if(s>e) return 0;
+  return daysBetween(s,e)/cfg.totalDays;
+}
+
+function applyScale(raw,factor){
+  if(factor===1) return raw;
+  return raw.map(d=>{
+    const o=Math.round((d.o||0)*factor);
+    const rev=+(d.rev*factor).toFixed(2);
+    const cog=+(d.cog*factor).toFixed(2);
+    const fees=+(d.fees*factor).toFixed(2);
+    const gp=+(rev-cog-fees).toFixed(2);
+    const gm=rev>0?+(gp/rev*100).toFixed(1):0;
+    const g=+(d.g*factor).toFixed(2);
+    const fb=+(d.fb*factor).toFixed(2);
+    const ads=+(g+fb).toFixed(2);
+    const np=+(gp-ads).toFixed(2);
+    const nm=rev>0?+(np/rev*100).toFixed(1):null;
+    const roas=ads>0?+(rev/ads).toFixed(2):0;
+    const roi=ads>0?+(np/ads*100).toFixed(1):null;
+    return{...d,o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
+  });
+}
+
+function refreshWithScale(){
+  const cfg=getCFG(currentStore);
+  const factor=getScaleFactor();
+  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():computeModeline();
+  DATA=applyScale(raw,factor);
+
+  // Header
+  $('hdr-sub').textContent='Visão geral de produtos · '+($('dr-label').textContent);
+  $('hdr-badges').innerHTML=`<span class="badge">${Math.round(cfg.orders*factor)} pedidos · ${DATA.filter(d=>d.o>0).length} produtos</span>`;
+  $('footer').textContent=`${cfg.name} · ${$('dr-label').textContent} · 1 USD = €${cfg.fx.toFixed(4)}`;
+
+  buildKPIs();
+  destroyCharts();
+  buildRevNP();
+  buildMargins();
+  buildAds();
+  buildTable();
+}
+
+// Close picker on outside click
+document.addEventListener('click',e=>{
+  if(!$('dr-wrap').contains(e.target)) closeDR();
+});
+// Update scale note on date input change
+['dr-from','dr-to'].forEach(id=>{
+  setTimeout(()=>{const el=$(id);if(el)el.addEventListener('change',updateScaleNote);},100);
+});
 
 window.addEventListener('load',()=>{
   switchStore('colosy');
