@@ -103,7 +103,7 @@
 
     /* Filter Panel */
     .fp-wrap{position:relative}
-    .fp-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:1500;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:210px;overflow:hidden;display:none}
+    .fp-panel{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:210px;overflow:hidden;display:none}
     .fp-panel.open{display:block}
     .fp-header{padding:9px 14px 7px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border)}
     .fp-cat{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;font-size:12.5px;color:var(--text);cursor:pointer;transition:background .1s;user-select:none}
@@ -231,7 +231,7 @@
     .cp-btn.cp-active{border-color:var(--accent-border);background:var(--accent-light);color:var(--accent);border-style:solid}
     .cp-count{font-size:10px;background:#e5e7eb;color:var(--text2);border-radius:10px;padding:1px 6px;margin-left:2px;display:none}
     .cp-count.show{display:inline;background:#fde68a;color:#92400e}
-    .cp-panel{position:absolute;top:calc(100% + 6px);right:0;z-index:1500;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:200px;overflow:hidden;display:none}
+    .cp-panel{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);min-width:200px;overflow:hidden;display:none}
     .cp-panel.open{display:block}
     .cp-header{padding:9px 14px 7px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
     .cp-reset{font-size:10.5px;font-weight:500;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;text-transform:none;letter-spacing:0}
@@ -897,6 +897,10 @@ function toggleColPicker(e){
   if(cpOpen){
     pendingCols=new Set(visibleCols); // copy current into staging
     renderColPickerPanel();
+    // Position fixed relative to button, avoiding overflow:hidden parents
+    const rect=$('cp-btn').getBoundingClientRect();
+    panel.style.top=(rect.bottom+6)+'px';
+    panel.style.right=(window.innerWidth-rect.right)+'px';
     panel.classList.add('open');
   } else {
     panel.classList.remove('open');
@@ -995,7 +999,12 @@ function toggleFP(e){
   e&&e.stopPropagation();
   const p=$('fp-panel');
   if(p.classList.contains('open')){closeFP();return;}
-  fpView='cats'; renderFP(); p.classList.add('open');
+  fpView='cats'; renderFP();
+  const btn=$('filter-add-btn');
+  const rect=btn.getBoundingClientRect();
+  p.style.top=(rect.bottom+6)+'px';
+  p.style.left=rect.left+'px';
+  p.classList.add('open');
 }
 function closeFP(){$('fp-panel').classList.remove('open');}
 
