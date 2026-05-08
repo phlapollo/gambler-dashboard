@@ -120,7 +120,9 @@
     .tscroll{overflow-x:auto}
     table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
     thead{background:var(--surface2)}
-    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:color .15s,background-color .15s}
+    th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);cursor:grab;user-select:none;transition:color .15s,background-color .15s,border-left .1s,opacity .15s}
+    th.th-dragging{opacity:.3;background:rgba(20,184,166,.04)!important}
+    th.th-drop-target{border-left:2px solid #14b8a6!important;background:rgba(20,184,166,.09)!important}
     th:hover{color:var(--text2)}
     th:hover .sort-icon{opacity:.45}
     th.th-sorted{color:var(--text);background:rgba(20,184,166,.05)}
@@ -871,6 +873,94 @@ const COL_DEFS=[
 const ALL_COLS=COL_DEFS.map(c=>c.key);
 let visibleCols=new Set(JSON.parse(localStorage.getItem('gbl_cols')||'null')||ALL_COLS);
 
+/* ─── COLUMN ORDER ─── */
+function loadColOrder(){
+  try{
+    const s=localStorage.getItem('gbl_col_order');
+    if(!s) return ALL_COLS.slice();
+    const arr=JSON.parse(s).filter(k=>ALL_COLS.includes(k));
+    ALL_COLS.forEach(k=>{if(!arr.includes(k))arr.push(k);});
+    return arr;
+  }catch(e){return ALL_COLS.slice();}
+}
+let colOrder=loadColOrder();
+function saveColOrder(){localStorage.setItem('gbl_col_order',JSON.stringify(colOrder));}
+function resetColOrder(){colOrder=ALL_COLS.slice();saveColOrder();}
+
+/* ─── CELL RENDER HELPERS ─── */
+const SORT_SVG=`<svg class="sort-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7-7 7 7"/></svg>`;
+
+function thHtml(key,label,extra=''){
+  return `<th data-col="${key}" onclick="sortBy('${key}')" draggable="true"
+    ondragstart="thDragStart(event,'${key}')" ondragover="thDragOver(event,'${key}')"
+    ondrop="thDrop(event,'${key}')" ondragend="thDragEnd()" ${extra}>
+    <span class="th-inner">${label} ${SORT_SVG}</span></th>`;
+}
+
+function cellHtml(key,d){
+  const npCls=d.np>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
+  const nmCls=d.nm>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
+  switch(key){
+    case 'o':    return `<td data-col="o" class="${d.o===0?'tv-muted':''}">${d.o||'—'}</td>`;
+    case 'rev':  return `<td data-col="rev">${d.rev>0?usd(d.rev):'—'}</td>`;
+    case 'cog':  return `<td data-col="cog" class="tv-muted">${d.cog>0?usd(d.cog):'—'}</td>`;
+    case 'fees': return `<td data-col="fees" class="tv-muted">${d.fees>0?usd(d.fees):'—'}</td>`;
+    case 'gp':   return `<td data-col="gp">${d.gp>0?usd(d.gp):'—'}</td>`;
+    case 'gm':   return `<td data-col="gm">${d.gm>0?`<span class="tpill ${pcls(d.gm,50,65)}">${pct(d.gm)}</span>`:'—'}</td>`;
+    case 'g':    return `<td data-col="g" class="tv-muted">${d.g>0?usd(d.g):'—'}</td>`;
+    case 'fb':   return `<td data-col="fb" class="tv-muted">${d.fb>0?usd(d.fb):'—'}</td>`;
+    case 'np':   return `<td data-col="np" class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>`;
+    case 'nm':   return `<td data-col="nm" class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>`;
+    case 'roas': return `<td data-col="roas">${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>`;
+    default: return `<td data-col="${key}">—</td>`;
+  }
+}
+
+function totalCellHtml(key,T){
+  switch(key){
+    case 'o':    return `<td data-col="o">${T.o}</td>`;
+    case 'rev':  return `<td data-col="rev">${usd(T.rev)}</td>`;
+    case 'cog':  return `<td data-col="cog" class="tv-muted">${usd(T.cog)}</td>`;
+    case 'fees': return `<td data-col="fees" class="tv-muted">${usd(T.fees)}</td>`;
+    case 'gp':   return `<td data-col="gp">${usd(T.gp)}</td>`;
+    case 'gm':   return `<td data-col="gm"><span class="tpill ${pcls(T.gm,50,65)}">${pct(T.gm)}</span></td>`;
+    case 'g':    return `<td data-col="g" class="tv-muted">${usd(T.g)}</td>`;
+    case 'fb':   return `<td data-col="fb" class="tv-muted">${usd(T.fb)}</td>`;
+    case 'np':   return `<td data-col="np" class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>`;
+    case 'nm':   return `<td data-col="nm"><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>`;
+    case 'roas': return `<td data-col="roas"><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>`;
+    default: return `<td data-col="${key}">—</td>`;
+  }
+}
+
+/* ─── DRAG & DROP COLUMN REORDER ─── */
+let _dragSrc=null;
+function thDragStart(e,key){
+  _dragSrc=key;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',key);
+  setTimeout(()=>e.target.classList.add('th-dragging'),0);
+}
+function thDragOver(e,key){
+  if(key===_dragSrc)return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('th').forEach(t=>t.classList.remove('th-drop-target'));
+  e.currentTarget.classList.add('th-drop-target');
+}
+function thDrop(e,key){
+  e.preventDefault();
+  if(!_dragSrc||_dragSrc===key)return;
+  const fi=colOrder.indexOf(_dragSrc),ti=colOrder.indexOf(key);
+  if(fi>-1&&ti>-1){colOrder.splice(fi,1);colOrder.splice(ti,0,_dragSrc);}
+  saveColOrder();
+  buildTable();
+}
+function thDragEnd(){
+  _dragSrc=null;
+  document.querySelectorAll('th').forEach(t=>t.classList.remove('th-dragging','th-drop-target'));
+}
+
 function saveVisibleCols(){localStorage.setItem('gbl_cols',JSON.stringify([...visibleCols]));}
 
 function applyColVisibility(){
@@ -913,13 +1003,14 @@ function renderColPickerPanel(){
   const cfg=getCFG(currentStore);
   const panel=$('cp-panel');
   const changed=![...pendingCols].every(k=>visibleCols.has(k))||![...visibleCols].every(k=>pendingCols.has(k));
-  let html=`<div class="cp-header">Colunas visíveis<button class="cp-reset" onclick="resetPending()">Restaurar</button></div>`;
+  let html=`<div class="cp-header">Colunas visíveis<div style="display:flex;gap:6px"><button class="cp-reset" onclick="resetColOrderFromPicker()" title="Resetar ordem das colunas">↺ Ordem</button><button class="cp-reset" onclick="resetPending()">Restaurar</button></div></div>`;
   COL_DEFS.forEach(col=>{
     if(col.fbOnly&&!cfg.hasFb) return;
     const on=pendingCols.has(col.key);
     html+=`<button class="fp-opt${on?' fp-selected':''}" onclick="stagingToggleCol('${col.key}')"><span class="fp-check"></span>${col.label}</button>`;
   });
-  html+=`<div style="display:flex;gap:7px;padding:10px 14px;border-top:1px solid var(--border);margin-top:2px">
+  html+=`<div style="padding:6px 14px 0;font-size:10px;color:var(--text3)">Arraste os cabeçalhos para reordenar</div>
+  <div style="display:flex;gap:7px;padding:8px 14px 10px;border-top:1px solid var(--border);margin-top:6px">
     <button class="dr-apply" style="flex:1;font-size:12px" onclick="applyPendingCols()">Aplicar</button>
     <button class="dr-cancel" onclick="cancelColPicker()">Cancelar</button>
   </div>`;
@@ -949,6 +1040,12 @@ function cancelColPicker(){
 
 function resetPending(){
   pendingCols=new Set(ALL_COLS);
+  renderColPickerPanel();
+}
+
+function resetColOrderFromPicker(){
+  resetColOrder();
+  buildTable();
   renderColPickerPanel();
 }
 
@@ -1084,47 +1181,29 @@ function renderFilterChips(){
 /* ─── TABLE ─── */
 function buildTable(){
   const cfg=getCFG(currentStore);
-  updateSortHeaders();
   const filtered=filterRows(DATA);
   const rows=applySort(filtered);
   const T=rows.reduce((a,d)=>({o:a.o+d.o,rev:a.rev+d.rev,cog:a.cog+d.cog,fees:a.fees+d.fees,gp:a.gp+d.gp,g:a.g+d.g,fb:a.fb+d.fb,np:a.np+d.np}),{o:0,rev:0,cog:0,fees:0,gp:0,g:0,fb:0,np:0});
   T.gm=T.rev>0?T.gp/T.rev*100:0; T.ads=T.g+T.fb; T.nm=T.rev>0?T.np/T.rev*100:0;
   T.roas=T.ads>0?T.rev/T.ads:0; T.roi=T.ads>0?T.np/T.ads*100:0;
 
-  const html=rows.map((d)=>{
+  // Active cols in current order (respects colOrder + visibleCols + fb filter)
+  const activeCols=colOrder.filter(k=>visibleCols.has(k)&&!(COL_DEFS.find(c=>c.key===k)?.fbOnly&&!cfg.hasFb));
+
+  // Rebuild thead dynamically
+  const COL_LABELS={o:'Pedidos',rev:'Receita',cog:'COGS',fees:'Fees',gp:'Lucro bruto',gm:'Mg. bruta',g:'Google',fb:'Facebook',np:'Lucro líq.',nm:'Mg. líq.',roas:'ROAS'};
+  let theadHtml=`<th data-col="p" style="width:13%" onclick="sortBy('p')"><span class="th-inner">Produto ${SORT_SVG}</span></th>`;
+  activeCols.forEach(k=>{theadHtml+=thHtml(k,COL_LABELS[k]||k);});
+  $('thead-row').innerHTML=theadHtml;
+  updateSortHeaders();
+
+  // Rebuild tbody
+  const html=rows.map(d=>{
     const ns=d.o===0;
-    const npCls=d.np>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
-    const nmCls=d.nm>0?'tv-pos':d.np<0?'tv-neg':'tv-muted';
-    return `<tr>
-      <td data-col="p">${d.p}${ns?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>
-      <td data-col="o" class="${d.o===0?'tv-muted':''}">${d.o||'—'}</td>
-      <td data-col="rev">${d.rev>0?usd(d.rev):'—'}</td>
-      <td data-col="cog" class="tv-muted">${d.cog>0?usd(d.cog):'—'}</td>
-      <td data-col="fees" class="tv-muted">${d.fees>0?usd(d.fees):'—'}</td>
-      <td data-col="gp">${d.gp>0?usd(d.gp):'—'}</td>
-      <td data-col="gm">${d.gm>0?`<span class="tpill ${pcls(d.gm,50,65)}">${pct(d.gm)}</span>`:'—'}</td>
-      <td data-col="g" class="tv-muted">${d.g>0?usd(d.g):'—'}</td>
-      <td data-col="fb" class="tv-muted">${d.fb>0?usd(d.fb):'—'}</td>
-      <td data-col="np" class="${npCls}" style="font-weight:600">${usd(d.np,true)}</td>
-      <td data-col="nm" class="${nmCls}">${d.nm!==null?`<span class="tpill ${pcls(d.nm,0,20)}">${pct(d.nm)}</span>`:'—'}</td>
-      <td data-col="roas">${d.roas>0?`<span class="tpill ${pcls(d.roas,2,3)}">${x2(d.roas)}</span>`:'—'}</td>
-    </tr>`;
+    return `<tr><td data-col="p">${d.p}${ns?`<span class="nosales-tag">(sem vendas)</span>`:''}</td>${activeCols.map(k=>cellHtml(k,d)).join('')}</tr>`;
   }).join('');
 
-  const totRow=`<tr class="tr-total">
-    <td data-col="p">Total</td>
-    <td data-col="o">${T.o}</td>
-    <td data-col="rev">${usd(T.rev)}</td>
-    <td data-col="cog" class="tv-muted">${usd(T.cog)}</td>
-    <td data-col="fees" class="tv-muted">${usd(T.fees)}</td>
-    <td data-col="gp">${usd(T.gp)}</td>
-    <td data-col="gm"><span class="tpill ${pcls(T.gm,50,65)}">${pct(T.gm)}</span></td>
-    <td data-col="g" class="tv-muted">${usd(T.g)}</td>
-    <td data-col="fb" class="tv-muted">${usd(T.fb)}</td>
-    <td data-col="np" class="${T.np>0?'tv-pos':'tv-neg'}" style="font-weight:700">${usd(T.np,true)}</td>
-    <td data-col="nm"><span class="tpill ${pcls(T.nm,0,20)}">${pct(T.nm)}</span></td>
-    <td data-col="roas"><span class="tpill ${pcls(T.roas,2,3)}">${x2(T.roas)}</span></td>
-  </tr>`;
+  const totRow=`<tr class="tr-total"><td data-col="p">Total</td>${activeCols.map(k=>totalCellHtml(k,T)).join('')}</tr>`;
 
   $('tbody').innerHTML=html+totRow;
   applyColVisibility();
