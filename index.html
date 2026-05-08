@@ -25,12 +25,8 @@
     .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px}
     .header-left{display:flex;align-items:center;gap:14px}
     .logo{
-      width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-      font-size:15px;font-weight:700;color:#fff;letter-spacing:-.5px;flex-shrink:0;
-      background:#1d4ed8;transition:background .25s
+      height:30px;width:auto;max-width:110px;object-fit:contain;flex-shrink:0;display:block
     }
-    .logo.renazi{background:#047857}
-    .logo.modeline{background:#b45309}
     .header-title h1{font-size:16px;font-weight:600;letter-spacing:-.2px;color:var(--text)}
     .header-title p{font-size:12px;color:var(--text2);margin-top:2px}
     .header-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -249,7 +245,7 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="logo" id="hdr-logo">C</div>
+      <img class="logo" id="hdr-logo" src="assets/logo-colosy.png" alt="Colosy">
       <div class="header-title">
         <h1 id="hdr-title">Dashboard · <span id="hdr-store-name" style="font-weight:500;color:var(--text2)">Colosy</span></h1>
         <p id="hdr-sub">Visão geral de produtos · 15 abr – 3 mai 2026</p>
@@ -388,7 +384,7 @@
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Adicionar filtro
         </button>
-        <div class="fp-panel" id="fp-panel"></div>
+        <div class="fp-panel" id="fp-panel" onclick="event.stopPropagation()"></div>
       </div>
       <!-- Column Picker -->
       <div class="cp-wrap">
@@ -397,7 +393,7 @@
           Colunas
           <span class="cp-count" id="cp-count"></span>
         </button>
-        <div class="cp-panel" id="cp-panel"></div>
+        <div class="cp-panel" id="cp-panel" onclick="event.stopPropagation()"></div>
       </div>
     </div>
 
@@ -643,8 +639,8 @@ function switchStore(store){
 
   const cfg=getCFG(store);
   $('store-select').value=store;
-  $('hdr-logo').textContent=cfg.letter;
-  $('hdr-logo').className='logo'+(store==='renazi'?' renazi':store==='modeline'?' modeline':'');
+  $('hdr-logo').src='assets/logo-'+store+'.png';
+  $('hdr-logo').alt=cfg.name;
   $('hdr-store-name').textContent=cfg.name;
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   applyColVisibility();
