@@ -888,32 +888,61 @@ function applyColVisibility(){
 }
 
 let cpOpen=false;
+let pendingCols=new Set(); // staged state while panel is open
+
 function toggleColPicker(e){
   e.stopPropagation();
   cpOpen=!cpOpen;
   const panel=$('cp-panel');
-  if(cpOpen){renderColPickerPanel();panel.classList.add('open');}
-  else panel.classList.remove('open');
+  if(cpOpen){
+    pendingCols=new Set(visibleCols); // copy current into staging
+    renderColPickerPanel();
+    panel.classList.add('open');
+  } else {
+    panel.classList.remove('open');
+  }
 }
 
 function renderColPickerPanel(){
   const cfg=getCFG(currentStore);
   const panel=$('cp-panel');
-  let html=`<div class="cp-header">Colunas visíveis<button class="cp-reset" onclick="resetCols()">Restaurar</button></div>`;
+  const changed=![...pendingCols].every(k=>visibleCols.has(k))||![...visibleCols].every(k=>pendingCols.has(k));
+  let html=`<div class="cp-header">Colunas visíveis<button class="cp-reset" onclick="resetPending()">Restaurar</button></div>`;
   COL_DEFS.forEach(col=>{
     if(col.fbOnly&&!cfg.hasFb) return;
-    const on=visibleCols.has(col.key);
-    html+=`<button class="fp-opt${on?' fp-selected':''}" onclick="toggleCol('${col.key}')"><span class="fp-check"></span>${col.label}</button>`;
+    const on=pendingCols.has(col.key);
+    html+=`<button class="fp-opt${on?' fp-selected':''}" onclick="stagingToggleCol('${col.key}')"><span class="fp-check"></span>${col.label}</button>`;
   });
+  html+=`<div style="display:flex;gap:7px;padding:10px 14px;border-top:1px solid var(--border);margin-top:2px">
+    <button class="dr-apply" style="flex:1;font-size:12px" onclick="applyPendingCols()">Aplicar</button>
+    <button class="dr-cancel" onclick="cancelColPicker()">Cancelar</button>
+  </div>`;
   panel.innerHTML=html;
 }
 
-function toggleCol(key){
-  // always keep at least 1 col visible
-  if(visibleCols.has(key)&&visibleCols.size<=1) return;
-  if(visibleCols.has(key)) visibleCols.delete(key); else visibleCols.add(key);
+function stagingToggleCol(key){
+  // always keep at least 1 col in staging
+  if(pendingCols.has(key)&&pendingCols.size<=1) return;
+  if(pendingCols.has(key)) pendingCols.delete(key); else pendingCols.add(key);
+  renderColPickerPanel();
+}
+
+function applyPendingCols(){
+  visibleCols=new Set(pendingCols);
   saveVisibleCols();
   applyColVisibility();
+  cpOpen=false;
+  $('cp-panel').classList.remove('open');
+}
+
+function cancelColPicker(){
+  pendingCols=new Set(visibleCols); // discard staged changes
+  cpOpen=false;
+  $('cp-panel').classList.remove('open');
+}
+
+function resetPending(){
+  pendingCols=new Set(ALL_COLS);
   renderColPickerPanel();
 }
 
@@ -921,12 +950,11 @@ function resetCols(){
   visibleCols=new Set(ALL_COLS);
   saveVisibleCols();
   applyColVisibility();
-  renderColPickerPanel();
 }
 
 document.addEventListener('click',e=>{
   if(cpOpen&&!e.target.closest('#cp-panel')&&!e.target.closest('#cp-btn')){
-    cpOpen=false;$('cp-panel').classList.remove('open');
+    cancelColPicker();
   }
 });
 
