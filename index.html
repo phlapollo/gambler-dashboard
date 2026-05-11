@@ -321,6 +321,7 @@
           <option value="colosy">Colosy</option>
           <option value="renazi">Renazi</option>
           <option value="modeline">Modeline</option>
+          <option value="kayse">Kayse</option>
         </select>
       </div>
     </div>
@@ -556,6 +557,37 @@ const MODELINE_RAW=[
 ];
 const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:47215.19,googleUsd:11152.19,fbUsd:8910.20,hasFb:true,orders:990,period:'1 abr–6 mai 2026',periodStart:new Date(2026,3,1),periodEnd:new Date(2026,4,6),totalDays:36};
 
+/* ─── KAYSE DATA ─── */
+// Orders: 1 jan–30 abr 2026 · paid + fulfilled + hasCost · COGS = cog + shipping · Fees = transaction_fee + taxes
+// Google: Performance da campanha (14).csv (1 jan–11 mai, scaled ×120/131 to Jan–Apr)
+const KAYSE_RAW=[
+  {p:'Barton',        o:1188, rev: 61700.20, cog: 24791.30, fees: 5091.93, g:17663.13},
+  {p:'Vellura',       o: 338, rev: 16457.72, cog:  4522.81, fees: 1369.83, g: 6279.63},
+  {p:'Norway',        o: 247, rev: 15971.23, cog:  5743.27, fees: 1316.17, g: 5803.63},
+  {p:'ErgoStride',    o: 219, rev:  9042.55, cog:  3132.52, fees:  776.44, g: 4088.57},
+  {p:'Held Cargo',    o: 157, rev:  7736.59, cog:  2480.36, fees:  618.60, g: 3671.36},
+  {p:'Rawik',         o: 165, rev:  7631.89, cog:  2184.85, fees:  639.53, g:  505.10},
+  {p:'Salkin',        o: 103, rev:  6591.84, cog:  2595.62, fees:  513.52, g: 2066.38},
+  {p:'OrthoMoc',      o: 159, rev:  6431.78, cog:  2153.18, fees:  543.21, g: 3548.19},
+  {p:'Polarr',        o:  88, rev:  4942.08, cog:  1433.81, fees:  413.81, g: 3198.65},
+  {p:'Klara',         o:  77, rev:  4841.29, cog:  1050.66, fees:  402.43, g: 2592.73},
+  {p:'Pheron',        o:  74, rev:  3198.03, cog:  1230.28, fees:  257.68, g:    0.00},
+  {p:'Santous',       o:  48, rev:  2314.20, cog:   741.53, fees:  177.06, g:  606.07},
+  {p:'Nordex',        o:  41, rev:  2575.70, cog:   790.35, fees:  206.53, g: 1542.27},
+  {p:'SoftLoom',      o:  22, rev:   913.71, cog:   324.56, fees:   75.32, g:  709.62},
+  {p:'SpineAlign',    o:  22, rev:   767.80, cog:   156.14, fees:   67.10, g:    0.00},
+  {p:'Urban',         o:  16, rev:   799.22, cog:   216.39, fees:   68.07, g:    0.00},
+  {p:'Tenis Air',     o:  13, rev:   558.60, cog:   191.64, fees:   44.59, g:  252.72},
+  {p:'FjordWarm',     o:  11, rev:   456.69, cog:    74.27, fees:   39.37, g:  148.03},
+  {p:'Slim',          o:   8, rev:   542.64, cog:   180.81, fees:   45.48, g:    0.00},
+  {p:'NordTherm',     o:   4, rev:   239.52, cog:    54.82, fees:   19.94, g:  340.37},
+  {p:'Coldway',       o:   4, rev:   252.49, cog:   107.69, fees:   21.23, g:  203.91},
+  {p:'Liora',         o:   3, rev:   239.60, cog:    84.65, fees:   19.94, g:  110.15},
+  {p:'Corretor',      o:   0, rev:     0.00, cog:     0.00, fees:    0.00, g:  730.90},
+  {p:'FrosFit',       o:   0, rev:     0.00, cog:     0.00, fees:    0.00, g:  205.42},
+];
+const KAYSE_CFG={name:'Kayse',letter:'K',fx:0.8555,revEur:157249.56,googleUsd:54526.17,fbUsd:0,hasFb:false,orders:3088,period:'1 jan–30 abr 2026',periodStart:new Date(2026,0,1),periodEnd:new Date(2026,3,30),totalDays:120};
+
 /* ─── STATE ─── */
 let currentStore='colosy';
 let DATA=[];
@@ -635,8 +667,32 @@ function computeModeline(){
   });
 }
 
+function computeKayse(){
+  const cfg=KAYSE_CFG;
+  return KAYSE_RAW.map(d=>{
+    const rev=+(d.rev/cfg.fx).toFixed(2);
+    const cog=+(d.cog/cfg.fx).toFixed(2);
+    const fees=+(d.fees/cfg.fx).toFixed(2);
+    const gp=+(rev-cog-fees).toFixed(2);
+    const gm=rev>0?+(gp/rev*100).toFixed(1):0;
+    const g=+d.g.toFixed(2);
+    const fb=0;
+    const ads=g;
+    const np=+(gp-ads).toFixed(2);
+    const nm=rev>0?+(np/rev*100).toFixed(1):null;
+    const roas=ads>0?+(rev/ads).toFixed(2):0;
+    const roi=ads>0?+(np/ads*100).toFixed(1):null;
+    return{p:d.p,o:d.o,rev,cog,fees,gp,gm,g,fb,ads,np,nm,roas,roi};
+  });
+}
+
 /* ─── STORE SWITCH ─── */
-function getCFG(store){return store==='colosy'?COLOSY_CFG:store==='renazi'?RENAZI_CFG:MODELINE_CFG;}
+function getCFG(store){
+  if(store==='colosy') return COLOSY_CFG;
+  if(store==='renazi') return RENAZI_CFG;
+  if(store==='kayse')  return KAYSE_CFG;
+  return MODELINE_CFG;
+}
 
 function switchStore(store){
   currentStore=store;
@@ -659,7 +715,7 @@ function switchStore(store){
 
 /* ─── PREVIOUS PERIOD COMPARISON ─── */
 function getRawTotals(factor){
-  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():computeModeline();
+  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():currentStore==='kayse'?computeKayse():computeModeline();
   const d=applyScale(raw,factor);
   const active=d.filter(x=>x.o>0||x.ads>0.05);
   const T=active.reduce((a,x)=>({o:a.o+x.o,rev:a.rev+x.rev,gp:a.gp+x.gp,g:a.g+x.g,fb:a.fb+x.fb,np:a.np+x.np}),{o:0,rev:0,gp:0,g:0,fb:0,np:0});
@@ -1379,7 +1435,7 @@ function applyScale(raw,factor){
 function refreshWithScale(){
   const cfg=getCFG(currentStore);
   const factor=getScaleFactor();
-  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():computeModeline();
+  const raw=currentStore==='colosy'?computeColosy():currentStore==='renazi'?computeRenazi():currentStore==='kayse'?computeKayse():computeModeline();
   DATA=applyScale(raw,factor);
 
   // Header
@@ -1413,7 +1469,7 @@ function refreshWithScale(){
 
 /* ─── PROFIT TARGET ─── */
 function targetKey(){return 'gbl_target_'+currentStore;}
-const DEFAULT_TARGETS={colosy:12000,renazi:10500,modeline:12000};
+const DEFAULT_TARGETS={colosy:12000,renazi:10500,modeline:12000,kayse:12000};
 function getTarget(){const v=localStorage.getItem(targetKey());return v?+v:(DEFAULT_TARGETS[currentStore]||null);}
 
 function openTargetEdit(){
