@@ -1901,31 +1901,28 @@ const FB_CONFIG={
 let fbDB=null;
 function initFirebase(){
   try{
+    if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');return;}
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDB=firebase.firestore();
-  }catch(e){console.error('Firebase init error:',e);}
+    console.log('Firebase OK, project:',FB_CONFIG.projectId);
+  }catch(e){console.error('Firebase init error:',e);fbDB=null;}
 }
-async function saveCBToFS(store,rows,meta){
-  if(!fbDB)return;
+async function saveCBToFS(store,rawCSV,meta){
+  if(!fbDB){console.warn('fbDB null — Firebase not initialized');return;}
   try{
-    const cols=rows[0]?._cols||[];
-    const statusCol=rows[0]?._statusCol||null;
-    const reasonCol=rows[0]?._reasonCol||null;
-    const dateCol=rows[0]?._dateCol||null;
-    const cleanRows=rows.map(r=>{
-      const c={};
-      cols.forEach(k=>{c[k]=r[k]??'';});
-      c._status=r._status;c._amount=r._amount||0;c._currency=r._currency||'EUR';
-      return c;
-    });
-    await fbDB.collection('chargebacks').doc(store).set({
-      cols,statusCol,reasonCol,dateCol,
-      rows:cleanRows,
+    // Store raw CSV text (compact) instead of parsed objects — avoids 1MB Firestore limit
+    const payload={
+      rawCSV,
       uploadedBy:meta?.email||'',
       uploadedAt:firebase.firestore.FieldValue.serverTimestamp(),
       fileName:meta?.fileName||''
-    });
-  }catch(e){console.error('FB save error:',e);}
+    };
+    await fbDB.collection('chargebacks').doc(store).set(payload);
+    console.log('Saved to Firestore:',store,'rows in',rawCSV.length,'chars');
+  }catch(e){
+    console.error('FB save error:',e);
+    alert('Erro ao salvar no banco de dados: '+e.message);
+  }
 }
 async function loadCBFromFS(store){
   if(!fbDB)return null;
@@ -1933,18 +1930,14 @@ async function loadCBFromFS(store){
     const doc=await fbDB.collection('chargebacks').doc(store).get();
     if(!doc.exists)return null;
     const d=doc.data();
-    const rows=(d.rows||[]).map(r=>({
-      ...r,_cols:d.cols||[],_statusCol:d.statusCol||null,
-      _reasonCol:d.reasonCol||null,_dateCol:d.dateCol||null
-    }));
     let uploadedAt=null;
     if(d.uploadedAt?.toDate) uploadedAt=d.uploadedAt.toDate();
-    return{rows,meta:{email:d.uploadedBy,uploadedAt,fileName:d.fileName}};
+    return{rawCSV:d.rawCSV||'',meta:{email:d.uploadedBy,uploadedAt,fileName:d.fileName}};
   }catch(e){console.error('FB load error:',e);return null;}
 }
 async function clearCBFromFS(store){
   if(!fbDB)return;
-  try{await fbDB.collection('chargebacks').doc(store).delete();}catch(e){}
+  try{await fbDB.collection('chargebacks').doc(store).delete();console.log('Deleted from Firestore:',store);}catch(e){console.error('FB delete error:',e);}
 }
 async function loadCBForStore(store){
   if(cbData[store].length>0)return;
@@ -1952,9 +1945,12 @@ async function loadCBForStore(store){
   renderCBView();
   const result=await loadCBFromFS(store);
   cbLoading[store]=false;
-  if(result){cbData[store]=result.rows;cbMeta[store]=result.meta;}
+  if(result&&result.rawCSV){
+    cbMeta[store]=result.meta;
+    parseCBCSV(result.rawCSV,store,true); // true = skipSave (already in Firestore)
+    return; // parseCBCSV calls renderCBView itself
+  }
   renderCBView();
-  if(cbData[store].length>0) setTimeout(()=>initCBCharts(store),50);
 }
 
 /* ── Store picker flyout ── */
@@ -2508,7 +2504,7 @@ function parseCBFile(file,store){
     reader.readAsText(file,'utf-8');
   }
 }
-function parseCBCSV(text,store){
+function parseCBCSV(text,store,skipSave=false){
   const firstLine=text.split('\n')[0];
   const sep=firstLine.includes('\t')?'\t':firstLine.split(';').length>firstLine.split(',').length?';':',';
   const lines=text.split('\n').filter(l=>l.trim());
@@ -2532,12 +2528,13 @@ function parseCBCSV(text,store){
   }
   cbData[store]=rows;
   cbChats[store]=[];
-  // Get current user email from session
-  let email='';
-  try{const u=JSON.parse(sessionStorage.getItem('gbl_auth_user'));email=u?.email||'';}catch(e){}
-  const meta={email,fileName:cbPendingFile.name||''};
-  cbMeta[store]=meta;
-  saveCBToFS(store,rows,meta);
+  if(!skipSave){
+    let email='';
+    try{const u=JSON.parse(sessionStorage.getItem('gbl_auth_user'));email=u?.email||'';}catch(e){}
+    const meta={email,fileName:cbPendingFile?.name||''};
+    cbMeta[store]=meta;
+    saveCBToFS(store,text,meta);
+  }
   renderCBView();
   setTimeout(()=>initCBCharts(store),50);
 }
