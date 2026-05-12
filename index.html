@@ -657,7 +657,7 @@
 <div class="layout" id="cb-view">
   <div class="header">
     <div class="header-left">
-      <div class="logo-wrap">
+      <div class="logo-wrap" style="border-radius:12px">
         <img class="logo" id="cb-hdr-logo" src="assets/logo-colosy.png" alt="">
       </div>
       <div class="header-title">
@@ -695,7 +695,7 @@
 <div class="layout" id="cogs-view">
   <div class="header">
     <div class="header-left">
-      <div class="logo-wrap">
+      <div class="logo-wrap" style="border-radius:12px">
         <img class="logo" id="cogs-hdr-logo" src="assets/logo-colosy.png" alt="">
       </div>
       <div class="header-title">
@@ -703,12 +703,7 @@
         <p style="font-size:12.5px;color:var(--text2);margin-top:3px">Edite manualmente ou importe via planilha CSV/XLS</p>
       </div>
     </div>
-    <div class="header-right">
-      <div id="cogs-store-badge" style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2)">
-        <img id="cogs-badge-logo" src="assets/logo-colosy.png" style="width:22px;height:22px;border-radius:6px;object-fit:cover" alt="">
-        <span id="cogs-badge-name">Colosy</span>
-      </div>
-    </div>
+    <div class="header-right"></div>
   </div>
 
   <div id="cogs-panels"></div>
@@ -931,8 +926,8 @@ function switchStore(store){
   const logo='assets/logo-'+store+'.png';
   const cbBadgeLogo=$('cb-badge-logo'); if(cbBadgeLogo){cbBadgeLogo.src=logo;}
   const cbBadgeName=$('cb-badge-name'); if(cbBadgeName){cbBadgeName.textContent=cfg.name;}
-  const cogsBadgeLogo=$('cogs-badge-logo'); if(cogsBadgeLogo){cogsBadgeLogo.src=logo;}
-  const cogsBadgeName=$('cogs-badge-name'); if(cogsBadgeName){cogsBadgeName.textContent=cfg.name;}
+  const cbHdrLogo=$('cb-hdr-logo'); if(cbHdrLogo){cbHdrLogo.src=logo;cbHdrLogo.alt=cfg.name;}
+  const cogsHdrLogo=$('cogs-hdr-logo'); if(cogsHdrLogo){cogsHdrLogo.src=logo;cogsHdrLogo.alt=cfg.name;}
 
   refreshWithScale();
 }
