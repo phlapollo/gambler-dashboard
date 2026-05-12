@@ -1780,8 +1780,8 @@ CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];});
 
 function switchView(view){
   const isDash=view==='dashboard';
-  $('app').style.display=isDash?'':'none';
-  $('cb-view').style.display=isDash?'none':'';
+  $('app').style.display=isDash?'block':'none';
+  $('cb-view').style.display=isDash?'none':'block';
   $('lnav-dashboard').classList.toggle('active',isDash);
   $('lnav-cb').classList.toggle('active',!isDash);
   if(!isDash){
