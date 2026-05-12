@@ -1629,13 +1629,22 @@ window.addEventListener('load',()=>{
 const GOOGLE_CLIENT_ID = '313170625361-d1j5nj5mg1bgl230lbbdhru5b39t6o4m.apps.googleusercontent.com';
 const AUTH_KEY = 'gbl_auth_user';
 
+function b64urlDecode(str){
+  str=str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length%4) str+='=';
+  return atob(str);
+}
+
 function handleCredentialResponse(response){
   try{
-    const payload=JSON.parse(atob(response.credential.split('.')[1]));
+    const payload=JSON.parse(b64urlDecode(response.credential.split('.')[1]));
     const user={name:payload.name,email:payload.email,picture:payload.picture||''};
     sessionStorage.setItem(AUTH_KEY,JSON.stringify(user));
     showDashboard(user);
-  }catch(e){console.error('Auth error',e);}
+  }catch(e){
+    console.error('Auth error',e);
+    alert('Erro ao processar login. Tente novamente.');
+  }
 }
 
 function showDashboard(user){
