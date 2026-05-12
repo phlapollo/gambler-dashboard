@@ -1868,12 +1868,12 @@ function renderAIPanel(store){
 
   const keyPanel=`
     <div class="cb-ai-key-panel" id="cb-key-panel-${store}">
-      <div class="cb-ai-key-label">Chave da API Anthropic (Claude)</div>
+      <div class="cb-ai-key-label">Chave da API Google AI (Gemini)</div>
       <div class="cb-ai-key-row">
-        <input class="cb-ai-key-input" type="password" id="cb-key-input-${store}" placeholder="sk-ant-..." value="${getAIKey()}">
+        <input class="cb-ai-key-input" type="password" id="cb-key-input-${store}" placeholder="AIza..." value="${getAIKey()}">
         <button class="cb-ai-key-save" onclick="cbSaveKey('${store}')">Salvar</button>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:7px">Obtenha sua chave em console.anthropic.com · Armazenada localmente no navegador.</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:7px">Obtenha sua chave em aistudio.google.com/app/apikey · Armazenada localmente no navegador.</div>
     </div>`;
 
   const messagesHtml=msgs.length===0
@@ -1891,7 +1891,7 @@ function renderAIPanel(store){
     <div class="cb-ai-wrap">
       <div class="cb-ai-header">
         <div class="cb-ai-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
-        <div class="cb-ai-title">Análise com IA · Claude</div>
+        <div class="cb-ai-title">Análise com IA · Gemini</div>
         <div class="cb-ai-sub">Faça perguntas sobre seus chargebacks</div>
         <div class="cb-ai-key-wrap">${keyStatus}</div>
       </div>
@@ -1951,17 +1951,26 @@ Contexto da loja: ${store}
 Total de chargebacks: ${rows.length} | Valor total: ${total.toFixed(2)} | Ganhos: ${won} | Perdidos: ${lost} | Pendentes: ${pending}`;
 
     const history=cbChats[store].filter(m=>!m.loading).slice(-10);
-    const messages=history.map(m=>({role:m.role,content:m.content}));
-    messages[messages.length-1]={role:'user',content:`${msg}\n\nDados (amostra):\n${csvSample}`};
+    // Build Gemini contents array (user/model alternation)
+    const contents=history.map(m=>({
+      role:m.role==='assistant'?'model':'user',
+      parts:[{text:m.content}]
+    }));
+    // Attach data to last user message
+    contents[contents.length-1]={role:'user',parts:[{text:`${msg}\n\nDados (amostra):\n${csvSample}`}]};
 
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:1200,system:systemPrompt,messages})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        systemInstruction:{parts:[{text:systemPrompt}]},
+        contents,
+        generationConfig:{maxOutputTokens:1200,temperature:0.7}
+      })
     });
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||'Erro API');
-    const reply=data.content[0].text;
+    const reply=data.candidates[0].content.parts[0].text;
     cbChats[store]=cbChats[store].filter(m=>!m.loading);
     cbChats[store].push({role:'assistant',content:reply});
   }catch(e){
