@@ -964,12 +964,16 @@ function switchStore(store){
   applyColVisibility();
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
 
-  // Update store badges in CB and COGS views
+  // Update store logos in CB and COGS headers
   const logo='assets/logo-'+store+'.png';
   const cbBadgeLogo=$('cb-badge-logo'); if(cbBadgeLogo){cbBadgeLogo.src=logo;}
   const cbBadgeName=$('cb-badge-name'); if(cbBadgeName){cbBadgeName.textContent=cfg.name;}
   const cbHdrLogo=$('cb-hdr-logo'); if(cbHdrLogo){cbHdrLogo.src=logo;cbHdrLogo.alt=cfg.name;}
   const cogsHdrLogo=$('cogs-hdr-logo'); if(cogsHdrLogo){cogsHdrLogo.src=logo;cogsHdrLogo.alt=cfg.name;}
+
+  // Re-render the active secondary view so its content reflects the new store
+  if($('cb-view').style.display==='block') renderCBView();
+  if($('cogs-view').style.display==='block') renderCOGSView();
 
   refreshWithScale();
 }
