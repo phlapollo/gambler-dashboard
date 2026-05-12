@@ -330,9 +330,9 @@
           <option value="colosy">Colosy</option>
           <option value="renazi">Renazi</option>
           <option value="modeline">Modeline</option>
-          <option value="kayse">Kayse</option>
           <option value="zenda">Zenda</option>
           <option value="vezzo">Vezzo</option>
+          <option value="kayse">Kayse</option>
         </select>
       </div>
     </div>
@@ -1470,7 +1470,7 @@ function refreshWithScale(){
 
 /* ─── PROFIT TARGET ─── */
 function targetKey(){return 'gbl_target_'+currentStore;}
-const DEFAULT_TARGETS={colosy:12000,renazi:10500,modeline:12000,kayse:12000,zenda:5000,vezzo:5000};
+const DEFAULT_TARGETS={};
 function getTarget(){const v=localStorage.getItem(targetKey());return v?+v:(DEFAULT_TARGETS[currentStore]||null);}
 
 function openTargetEdit(){
