@@ -337,6 +337,29 @@
     .cb-ai-send:disabled{opacity:.45;cursor:default}
     .cb-upload-accept{font-size:11px;color:var(--text3);margin-top:8px}
 
+    /* ── COGS view ── */
+    #cogs-view{display:none}
+    .cogs-upload-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .cogs-upload-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s}
+    .cogs-upload-btn:hover{opacity:.88}
+    .cogs-upload-note{font-size:11.5px;color:var(--text3)}
+    .cogs-table-wrap{background:#fff;border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+    .cogs-table{width:100%;border-collapse:collapse;font-size:13px}
+    .cogs-table th{padding:10px 16px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);background:var(--surface2)}
+    .cogs-table th.right{text-align:right}
+    .cogs-table td{padding:9px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+    .cogs-table td.right{text-align:right}
+    .cogs-table tr:last-child td{border-bottom:none}
+    .cogs-table tr:hover td{background:var(--surface2)}
+    .cogs-input{width:110px;border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12.5px;text-align:right;outline:none;color:var(--text);background:#fff;transition:border-color .15s}
+    .cogs-input:focus{border-color:#93c5fd}
+    .cogs-cur{font-size:11px;color:var(--text3);margin-left:4px}
+    .cogs-badge-orders{display:inline-block;font-size:10.5px;font-weight:500;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--text2)}
+    .cogs-save-bar{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+    .cogs-save-btn{padding:8px 20px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer}
+    .cogs-save-btn:hover{opacity:.88}
+    .cogs-saved-note{font-size:12px;color:var(--green);display:none}
+
     /* ── Auth wall ── */
     #auth-wall{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:var(--bg)}
     #auth-wall.hidden{display:none}
@@ -372,6 +395,10 @@
   <button class="lnav-item active" id="lnav-dashboard" onclick="switchView('dashboard')" title="">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span class="lnav-tip">Dashboard</span>
+  </button>
+  <button class="lnav-item" id="lnav-cogs" onclick="switchView('cogs')" title="">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    <span class="lnav-tip">COGS</span>
   </button>
   <button class="lnav-item" id="lnav-cb" onclick="switchView('cb')" title="">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
@@ -639,6 +666,10 @@
       </div>
     </div>
     <div class="header-right">
+      <div id="cb-store-badge" style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2)">
+        <img id="cb-badge-logo" src="assets/logo-colosy.png" style="width:22px;height:22px;border-radius:6px;object-fit:cover" alt="">
+        <span id="cb-badge-name">Colosy</span>
+      </div>
       <div style="position:relative">
         <button id="cb-global-key-btn" onclick="toggleGlobalKeyPanel()" style="display:none;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><path d="M11 11l5 5M14 14l3 3"/><path d="M8 11v10"/></svg>
@@ -656,18 +687,31 @@
     </div>
   </div>
 
-  <!-- Store tabs -->
-  <div class="cb-store-tabs" id="cb-store-tabs">
-    <button class="cb-tab active" data-store="colosy"   onclick="cbSwitchStore('colosy')">Colosy</button>
-    <button class="cb-tab"        data-store="renazi"   onclick="cbSwitchStore('renazi')">Renazi</button>
-    <button class="cb-tab"        data-store="modeline" onclick="cbSwitchStore('modeline')">Modeline</button>
-    <button class="cb-tab"        data-store="zenda"    onclick="cbSwitchStore('zenda')">Zenda</button>
-    <button class="cb-tab"        data-store="vezzo"    onclick="cbSwitchStore('vezzo')">Vezzo</button>
-    <button class="cb-tab"        data-store="kayse"    onclick="cbSwitchStore('kayse')">Kayse</button>
-  </div>
-
   <!-- Per-store panels (generated by JS) -->
   <div id="cb-panels"></div>
+</div>
+
+<!-- ── COGS View ── -->
+<div class="layout" id="cogs-view">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-wrap">
+        <img class="logo" id="cogs-hdr-logo" src="assets/logo-colosy.png" alt="">
+      </div>
+      <div class="header-title">
+        <h1>COGS <span style="font-weight:500;color:var(--text2);font-size:18px">· Custo por produto</span></h1>
+        <p style="font-size:12.5px;color:var(--text2);margin-top:3px">Edite manualmente ou importe via planilha CSV/XLS</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="cogs-store-badge" style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2)">
+        <img id="cogs-badge-logo" src="assets/logo-colosy.png" style="width:22px;height:22px;border-radius:6px;object-fit:cover" alt="">
+        <span id="cogs-badge-name">Colosy</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="cogs-panels"></div>
 </div>
 
 <script>
@@ -860,6 +904,7 @@ const STORE_MAP={
   zenda:{cfg:()=>ZENDA_CFG,    compute:computeZenda},
   vezzo:{cfg:()=>VEZZO_CFG,    compute:computeVezzo},
 };
+const STORE_RAWS={colosy:COLOSY_RAW,renazi:RENAZI_RAW,modeline:MODELINE_RAW,kayse:KAYSE_RAW,zenda:ZENDA_RAW,vezzo:VEZZO_RAW};
 function getCFG(store){return(STORE_MAP[store]||STORE_MAP.modeline).cfg();}
 function computeCurrent(){return(STORE_MAP[currentStore]||STORE_MAP.modeline).compute();}
 
@@ -881,6 +926,13 @@ function switchStore(store){
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   applyColVisibility();
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
+
+  // Update store badges in CB and COGS views
+  const logo='assets/logo-'+store+'.png';
+  const cbBadgeLogo=$('cb-badge-logo'); if(cbBadgeLogo){cbBadgeLogo.src=logo;}
+  const cbBadgeName=$('cb-badge-name'); if(cbBadgeName){cbBadgeName.textContent=cfg.name;}
+  const cogsBadgeLogo=$('cogs-badge-logo'); if(cogsBadgeLogo){cogsBadgeLogo.src=logo;}
+  const cogsBadgeName=$('cogs-badge-name'); if(cogsBadgeName){cogsBadgeName.textContent=cfg.name;}
 
   refreshWithScale();
 }
@@ -1778,17 +1830,23 @@ const cbData={};
 const cbChats={};
 CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];});
 
+/* ── COGS data: {unitCog: number|null, currency: string} per product per store ── */
+const cogsEdits={}; // store -> {productName -> unitCog}
+CB_STORES.forEach(s=>{cogsEdits[s]={};});
+
 function switchView(view){
-  const isDash=view==='dashboard';
-  $('app').style.display=isDash?'block':'none';
-  $('cb-view').style.display=isDash?'none':'block';
-  $('lnav-dashboard').classList.toggle('active',isDash);
-  $('lnav-cb').classList.toggle('active',!isDash);
-  if(!isDash){
+  $('app').style.display=view==='dashboard'?'block':'none';
+  $('cb-view').style.display=view==='cb'?'block':'none';
+  $('cogs-view').style.display=view==='cogs'?'block':'none';
+  $('lnav-dashboard').classList.toggle('active',view==='dashboard');
+  $('lnav-cogs').classList.toggle('active',view==='cogs');
+  $('lnav-cb').classList.toggle('active',view==='cb');
+  if(view==='cb'){
     renderCBView();
     const label=document.getElementById('cb-global-key-label');
     if(label) label.textContent=getAIKey()?'✓ Chave configurada':'Configurar chave Gemini';
   }
+  if(view==='cogs') renderCOGSView();
 }
 
 /* ── Chargeback store tabs ── */
@@ -1800,18 +1858,134 @@ function cbSwitchStore(store){
 
 /* ── Render entire CB view ── */
 function renderCBView(){
+  const s=currentStore;
   const wrap=$('cb-panels');
-  wrap.innerHTML=CB_STORES.map(s=>`
-    <div class="cb-panel${s===cbCurrentStore?' active':''}" data-store="${s}">
-      ${renderCBPanel(s)}
-    </div>`).join('');
-  CB_STORES.forEach(s=>{
-    const zone=document.getElementById('cb-zone-'+s);
-    if(!zone)return;
+  wrap.innerHTML=`<div class="cb-panel active" data-store="${s}">${renderCBPanel(s)}</div>`;
+  const zone=document.getElementById('cb-zone-'+s);
+  if(zone){
     zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
     zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
     zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCBFile(f,s);});
+  }
+}
+
+/* ── COGS View ── */
+function renderCOGSView(){
+  const s=currentStore;
+  const cfg=getCFG(s);
+  const raw=(STORE_RAWS[s]||[]).filter(r=>r.p!=='__unknown__');
+  const edits=cogsEdits[s]||{};
+  const currency=cfg.name==='Colosy'||cfg.name==='Renazi'||cfg.name==='Modeline'||cfg.name==='Zenda'||cfg.name==='Vezzo'||cfg.name==='Kayse'?'EUR':'EUR';
+
+  const rows=raw.map(r=>{
+    const val=edits[r.p]!=null?edits[r.p]:(r.cog>0&&r.o>0?+(r.cog/r.o).toFixed(2):null);
+    const inputVal=val!=null?val:'';
+    return `<tr>
+      <td style="font-weight:500">${r.p}</td>
+      <td><span class="cogs-badge-orders">${r.o} pedidos</span></td>
+      <td class="right">
+        <input class="cogs-input" type="number" min="0" step="0.01" placeholder="0.00"
+          value="${inputVal}" data-product="${r.p.replace(/"/g,'&quot;')}"
+          oninput="cogsEdits['${s}'][this.dataset.product]=this.value===''?null:parseFloat(this.value)">
+        <span class="cogs-cur">EUR / un.</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  $('cogs-panels').innerHTML=`
+    <div class="cogs-upload-bar">
+      <button class="cogs-upload-btn" onclick="document.getElementById('cogs-file-input-${s}').click()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar planilha
+      </button>
+      <input type="file" id="cogs-file-input-${s}" style="display:none" accept=".csv,.xls,.xlsx,.txt" onchange="parseCOGSFile(this.files[0],'${s}')">
+      <span class="cogs-upload-note">CSV ou XLS com colunas: produto, custo · Os nomes dos produtos já estão pré-preenchidos abaixo.</span>
+    </div>
+    <div class="cogs-table-wrap">
+      <table class="cogs-table">
+        <thead><tr><th>Produto</th><th>Pedidos no período</th><th class="right">Custo por unidade</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="cogs-save-bar">
+      <button class="cogs-save-btn" onclick="saveCOGSData('${s}')">Salvar alterações</button>
+      <span class="cogs-saved-note" id="cogs-saved-note-${s}">✓ Salvo</span>
+    </div>`;
+}
+
+function saveCOGSData(store){
+  // Persist to localStorage
+  try{
+    const key='cogs_data_'+store;
+    localStorage.setItem(key,JSON.stringify(cogsEdits[store]||{}));
+    const note=document.getElementById('cogs-saved-note-'+store);
+    if(note){note.style.display='inline';setTimeout(()=>note.style.display='none',2500);}
+  }catch(e){}
+}
+
+function loadCOGSData(){
+  CB_STORES.forEach(s=>{
+    try{
+      const saved=localStorage.getItem('cogs_data_'+s);
+      if(saved) cogsEdits[s]=JSON.parse(saved);
+    }catch(e){}
   });
+}
+
+function parseCOGSFile(file,store){
+  if(!file) return;
+  const name=file.name.toLowerCase();
+  const isXLS=name.endsWith('.xls')||name.endsWith('.xlsx');
+  if(isXLS){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      applyCOGSRows(rows,store);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const text=e.target.result;
+      const sep=text.includes(';')?';':',';
+      const lines=text.split('\n').filter(l=>l.trim());
+      if(!lines.length) return;
+      const headers=lines[0].split(sep).map(h=>h.replace(/["\r]/g,'').trim().toLowerCase());
+      const rows=lines.slice(1).map(l=>{
+        const cells=l.split(sep).map(c=>c.replace(/["\r]/g,'').trim());
+        return Object.fromEntries(headers.map((h,i)=>[h,cells[i]||'']));
+      });
+      applyCOGSRows(rows,store);
+    };
+    reader.readAsText(file,'utf-8');
+  }
+}
+
+function applyCOGSRows(rows,store){
+  const raw=(STORE_RAWS[store]||[]).filter(r=>r.p!=='__unknown__');
+  const productNames=raw.map(r=>r.p.toLowerCase());
+  let matched=0;
+  rows.forEach(row=>{
+    // Try to find product name column
+    const keys=Object.keys(row);
+    const nameKey=keys.find(k=>k.includes('produto')||k.includes('product')||k.includes('name')||k.includes('nome')||k===keys[0]);
+    const cogKey=keys.find(k=>k.includes('cog')||k.includes('custo')||k.includes('cost')||k.includes('preco')||k.includes('preço')||k===keys[1]);
+    if(!nameKey||!cogKey) return;
+    const pname=(row[nameKey]||'').trim();
+    const val=parseFloat((row[cogKey]||'').toString().replace(',','.'));
+    if(!pname||isNaN(val)) return;
+    // Try to match product name (case-insensitive, partial)
+    const idx=productNames.findIndex(n=>n===pname.toLowerCase()||n.includes(pname.toLowerCase())||pname.toLowerCase().includes(n));
+    if(idx>=0){
+      cogsEdits[store][raw[idx].p]=val;
+      matched++;
+    }
+  });
+  renderCOGSView();
+  if(matched>0) saveCOGSData(store);
+  alert(`${matched} produto(s) atualizado(s) com sucesso.`);
 }
 
 /* ── Render one store panel ── */
@@ -2182,6 +2356,7 @@ function initAuth(){
   });
 }
 
+loadCOGSData();
 // Wait for GIS script to load
 if(window.google&&window.google.accounts){
   initAuth();
