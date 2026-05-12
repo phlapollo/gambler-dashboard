@@ -19,8 +19,18 @@
       --amber:#b45309;--amber-light:#fef3c7;
       --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
     }
-    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-left:52px}
     .layout{max-width:1400px;margin:0 auto;padding:28px 24px 52px}
+
+    /* ── Left Nav ── */
+    .left-nav{position:fixed;left:0;top:0;bottom:0;width:52px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0 16px;gap:2px;z-index:10000}
+    .lnav-logo{width:30px;height:30px;border-radius:8px;object-fit:cover;margin-bottom:18px;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+    .lnav-sep{width:28px;height:1px;background:var(--border);margin:6px 0}
+    .lnav-item{position:relative;width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);border:none;background:none;transition:all .15s;flex-shrink:0}
+    .lnav-item:hover{background:var(--surface2);color:var(--text)}
+    .lnav-item.active{background:var(--accent-light);color:var(--accent)}
+    .lnav-tip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#1f2937;color:#fff;font-size:11.5px;font-weight:500;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:99999}
+    .lnav-item:hover .lnav-tip{opacity:1}
 
     /* Header */
     .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px}
@@ -252,6 +262,44 @@
     @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.layout{padding:14px 12px 32px}.kpi-value{font-size:20px}.dr-panel{right:auto;left:0}}
 
+    /* ── Chargeback view ── */
+    #cb-view{display:none}
+    .cb-store-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px}
+    .cb-tab{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}
+    .cb-tab:hover{border-color:#93c5fd;color:var(--accent)}
+    .cb-tab.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+    .cb-panel{display:none}.cb-panel.active{display:block}
+    .cb-upload-zone{border:2px dashed var(--border);border-radius:14px;padding:48px 32px;text-align:center;background:#fff;cursor:pointer;transition:all .2s;margin-bottom:24px}
+    .cb-upload-zone:hover,.cb-upload-zone.drag{border-color:#93c5fd;background:var(--accent-light)}
+    .cb-upload-icon{display:flex;justify-content:center;margin-bottom:14px;color:var(--text3)}
+    .cb-upload-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+    .cb-upload-sub{font-size:12.5px;color:var(--text2);margin-bottom:18px}
+    .cb-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s}
+    .cb-upload-btn:hover{opacity:.88}
+    .cb-file-input{display:none}
+    .cb-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+    .cb-kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+    .cb-kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
+    .cb-kpi-val{font-size:22px;font-weight:700;color:var(--text)}
+    .cb-kpi-val.red{color:var(--red)}
+    .cb-kpi-val.amber{color:var(--amber)}
+    .cb-section-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .cb-clear-btn{margin-left:auto;padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer}
+    .cb-clear-btn:hover{border-color:#f87171;color:var(--red)}
+    .cb-tscroll{overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#fff}
+    .cb-table{width:100%;border-collapse:collapse;font-size:12.5px}
+    .cb-table th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2)}
+    .cb-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+    .cb-table tr:last-child td{border-bottom:none}
+    .cb-table tr:hover td{background:var(--surface2)}
+    .cb-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+    .cb-badge.won{background:var(--green-light);color:var(--green)}
+    .cb-badge.lost{background:var(--red-light);color:var(--red)}
+    .cb-badge.pending{background:var(--amber-light);color:var(--amber)}
+    .cb-empty{text-align:center;padding:52px 24px;color:var(--text3);font-size:13px}
+    .cb-col-map{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--text2)}
+    .cb-col-map strong{color:var(--text);font-weight:600}
+
     /* ── Auth wall ── */
     #auth-wall{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:var(--bg)}
     #auth-wall.hidden{display:none}
@@ -279,6 +327,20 @@
   <style id="col-style"></style>
 </head>
 <body>
+
+<!-- ── Left Nav ── -->
+<nav class="left-nav">
+  <img class="lnav-logo" src="assets/logo-colosy.png" id="lnav-logo" alt="">
+  <div class="lnav-sep"></div>
+  <button class="lnav-item active" id="lnav-dashboard" onclick="switchView('dashboard')" title="">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="lnav-tip">Dashboard</span>
+  </button>
+  <button class="lnav-item" id="lnav-cb" onclick="switchView('cb')" title="">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    <span class="lnav-tip">Chargebacks</span>
+  </button>
+</nav>
 
 <!-- ── Auth Wall ── -->
 <div id="auth-wall">
@@ -525,6 +587,34 @@
   </div>
 
   <div class="footer" id="footer">P&amp;L Dashboard · 1 USD = €0.8555</div>
+</div>
+
+<!-- ── Chargeback View ── -->
+<div class="layout" id="cb-view">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-wrap">
+        <img class="logo" id="cb-hdr-logo" src="assets/logo-colosy.png" alt="">
+      </div>
+      <div class="header-title">
+        <h1>Chargebacks <span style="font-weight:500;color:var(--text2);font-size:18px">· Relatórios por loja</span></h1>
+        <p style="font-size:12.5px;color:var(--text2);margin-top:3px">Faça upload dos arquivos CSV de chargeback de cada loja</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Store tabs -->
+  <div class="cb-store-tabs" id="cb-store-tabs">
+    <button class="cb-tab active" data-store="colosy"   onclick="cbSwitchStore('colosy')">Colosy</button>
+    <button class="cb-tab"        data-store="renazi"   onclick="cbSwitchStore('renazi')">Renazi</button>
+    <button class="cb-tab"        data-store="modeline" onclick="cbSwitchStore('modeline')">Modeline</button>
+    <button class="cb-tab"        data-store="zenda"    onclick="cbSwitchStore('zenda')">Zenda</button>
+    <button class="cb-tab"        data-store="vezzo"    onclick="cbSwitchStore('vezzo')">Vezzo</button>
+    <button class="cb-tab"        data-store="kayse"    onclick="cbSwitchStore('kayse')">Kayse</button>
+  </div>
+
+  <!-- Per-store panels (generated by JS) -->
+  <div id="cb-panels"></div>
 </div>
 
 <script>
@@ -1624,6 +1714,197 @@ document.addEventListener('click',e=>{
 window.addEventListener('load',()=>{
   switchStore('colosy');
 });
+
+/* ── View switcher ── */
+const CB_STORES=['colosy','renazi','modeline','zenda','vezzo','kayse'];
+let cbCurrentStore='colosy';
+// cbData[store] = array of parsed row objects
+const cbData={};
+CB_STORES.forEach(s=>cbData[s]=[]);
+
+function switchView(view){
+  const isDash=view==='dashboard';
+  $('app').style.display=isDash?'':'none';
+  $('cb-view').style.display=isDash?'none':'';
+  $('lnav-dashboard').classList.toggle('active',isDash);
+  $('lnav-cb').classList.toggle('active',!isDash);
+  if(!isDash) renderCBView();
+}
+
+/* ── Chargeback logic ── */
+function cbSwitchStore(store){
+  cbCurrentStore=store;
+  document.querySelectorAll('.cb-tab').forEach(t=>t.classList.toggle('active',t.dataset.store===store));
+  document.querySelectorAll('.cb-panel').forEach(p=>p.classList.toggle('active',p.dataset.store===store));
+}
+
+function renderCBView(){
+  const wrap=$('cb-panels');
+  wrap.innerHTML=CB_STORES.map(s=>`
+    <div class="cb-panel${s===cbCurrentStore?' active':''}" data-store="${s}">
+      ${renderCBPanel(s)}
+    </div>`).join('');
+  // Re-attach drag events
+  CB_STORES.forEach(s=>{
+    const zone=document.getElementById('cb-zone-'+s);
+    if(!zone)return;
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+    zone.addEventListener('drop',e=>{
+      e.preventDefault();zone.classList.remove('drag');
+      const file=e.dataTransfer.files[0];
+      if(file) parseCBFile(file,s);
+    });
+  });
+}
+
+function renderCBPanel(store){
+  const rows=cbData[store];
+  const hasData=rows.length>0;
+  const uploadZone=`
+    <div class="cb-upload-zone" id="cb-zone-${store}" onclick="document.getElementById('cb-input-${store}').click()">
+      <div class="cb-upload-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="cb-upload-title">Upload relatório de chargeback</div>
+      <div class="cb-upload-sub">Arraste o arquivo CSV aqui ou clique para selecionar</div>
+      <button class="cb-upload-btn" onclick="event.stopPropagation();document.getElementById('cb-input-${store}').click()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        ${hasData?'Substituir arquivo':'Selecionar arquivo CSV'}
+      </button>
+      <input type="file" id="cb-input-${store}" class="cb-file-input" accept=".csv,.txt" onchange="parseCBFile(this.files[0],'${store}')">
+    </div>`;
+  if(!hasData) return uploadZone;
+
+  // Summary
+  const total=rows.reduce((a,r)=>a+(r._amount||0),0);
+  const won=rows.filter(r=>r._status==='won').length;
+  const lost=rows.filter(r=>r._status==='lost').length;
+  const pending=rows.filter(r=>r._status==='pending').length;
+  const amtLost=rows.filter(r=>r._status==='lost').reduce((a,r)=>a+(r._amount||0),0);
+
+  const summary=`
+    <div class="cb-summary-grid">
+      <div class="cb-kpi"><div class="cb-kpi-label">Total chargebacks</div><div class="cb-kpi-val red">${rows.length}</div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Valor total</div><div class="cb-kpi-val amber">${fmtAmt(total,rows[0]?._currency)}</div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Perdidos</div><div class="cb-kpi-val red">${lost} <span style="font-size:13px;font-weight:500">(${fmtAmt(amtLost,rows[0]?._currency)})</span></div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Ganhos</div><div class="cb-kpi-val" style="color:var(--green)">${won}</div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Pendentes</div><div class="cb-kpi-val amber">${pending}</div></div>
+    </div>`;
+
+  // Table — show all detected columns
+  const cols=rows[0]?._cols||[];
+  const thead=cols.map(c=>`<th>${c}</th>`).join('');
+  const tbody=rows.map(r=>{
+    const cells=cols.map(c=>{
+      if(c===r._statusCol) return `<td><span class="cb-badge ${r._status}">${r[c]||'—'}</span></td>`;
+      return `<td>${r[c]??'—'}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  const table=`
+    <div class="cb-section-title">
+      Registros (${rows.length})
+      <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
+    </div>
+    <div class="cb-tscroll"><table class="cb-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+
+  return uploadZone+summary+table;
+}
+
+function fmtAmt(val,currency){
+  if(!val&&val!==0) return '—';
+  const sym=currency==='EUR'?'€':currency==='GBP'?'£':'$';
+  return sym+val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+
+const STATUS_WORDS={won:['won','ganho','ganha','vencido','aprovado','closed_won','accepted'],
+  lost:['lost','perdido','perdida','lost_chargeback','closed_lost','denied','declined','not_received'],
+  pending:['pending','pendente','open','in_review','needs_response','under_review','warning_needs_response','charge_refunded','warning_under_review']};
+
+function detectStatus(val){
+  if(!val) return 'pending';
+  const v=val.toLowerCase().replace(/\s+/g,'_');
+  for(const [k,words] of Object.entries(STATUS_WORDS)) if(words.some(w=>v.includes(w))) return k;
+  return 'pending';
+}
+
+const AMT_COLS=['amount','valor','montant','betrag','chargeback_amount','disputed_amount','importe','importe_disputado','total'];
+const STATUS_COLS=['status','estado','statut','status do chargeback','chargeback_status','state','reason_code','situação'];
+const DATE_COLS=['date','data','fecha','datum','created','created_at','chargeback_date','opened_date'];
+const ORDER_COLS=['order','pedido','order_id','order_number','commande','bestellung','número do pedido','#order'];
+const REASON_COLS=['reason','motivo','raison','grund','chargeback_reason','dispute_reason'];
+const CURRENCY_COLS=['currency','moeda','devise','währung'];
+
+function matchCol(headers,candidates){
+  for(const c of candidates){
+    const found=headers.find(h=>h.toLowerCase().replace(/\s+/g,'_')===c||h.toLowerCase()===c||h.toLowerCase().includes(c));
+    if(found) return found;
+  }
+  return null;
+}
+
+function parseCBFile(file,store){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    // Detect separator
+    const firstLine=text.split('\n')[0];
+    const sep=firstLine.includes('\t')?'\t':firstLine.includes(';')?';':',';
+    const lines=text.split('\n').filter(l=>l.trim());
+    if(lines.length<2){alert('Arquivo vazio ou inválido.');return;}
+    const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+    // Map known columns
+    const amtCol=matchCol(headers,AMT_COLS);
+    const statusCol=matchCol(headers,STATUS_COLS);
+    const dateCol=matchCol(headers,DATE_COLS);
+    const orderCol=matchCol(headers,ORDER_COLS);
+    const reasonCol=matchCol(headers,REASON_COLS);
+    const currencyCol=matchCol(headers,CURRENCY_COLS);
+    // Parse rows
+    const rows=[];
+    for(let i=1;i<lines.length;i++){
+      const vals=splitCSVLine(lines[i],sep);
+      if(vals.length<2) continue;
+      const row={_cols:headers,_statusCol:statusCol};
+      headers.forEach((h,idx)=>{ row[h]=(vals[idx]||'').trim().replace(/^"|"$/g,''); });
+      // Derived
+      if(amtCol){
+        const raw=row[amtCol].replace(/[^0-9.,-]/g,'').replace(',','.');
+        row._amount=parseFloat(raw)||0;
+      }
+      if(statusCol) row._status=detectStatus(row[statusCol]);
+      else row._status='pending';
+      if(currencyCol) row._currency=row[currencyCol]||'EUR';
+      else row._currency='EUR';
+      rows.push(row);
+    }
+    cbData[store]=rows;
+    renderCBView();
+    cbSwitchStore(store);
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function splitCSVLine(line,sep){
+  if(sep!==',') return line.split(sep);
+  const result=[];let cur='';let inQ=false;
+  for(const ch of line){
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){result.push(cur);cur='';}
+    else cur+=ch;
+  }
+  result.push(cur);
+  return result;
+}
+
+function clearCBData(store){
+  cbData[store]=[];
+  renderCBView();
+  cbSwitchStore(store);
+}
 
 /* ── Google Auth ── */
 const GOOGLE_CLIENT_ID = '313170625361-d1j5nj5mg1bgl230lbbdhru5b39t6o4m.apps.googleusercontent.com';
