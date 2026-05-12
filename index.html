@@ -872,8 +872,11 @@ function switchStore(store){
 
   const cfg=getCFG(store);
   $('store-select').value=store;
-  $('hdr-logo').src='assets/logo-'+store+'.png';
+  const logoSrc='assets/logo-'+store+'.png';
+  $('hdr-logo').src=logoSrc;
   $('hdr-logo').alt=cfg.name;
+  $('lnav-logo').src=logoSrc;
+  $('lnav-logo').alt=cfg.name;
   $('hdr-store-name').textContent=cfg.name;
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   applyColVisibility();
