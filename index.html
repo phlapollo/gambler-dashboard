@@ -26,14 +26,24 @@
     /* ── Left Nav ── */
     .left-nav{position:fixed;left:0;top:0;bottom:0;width:52px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:stretch;padding:14px 7px 16px;gap:2px;z-index:10000;overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1)}
     .left-nav:hover{width:190px;box-shadow:2px 0 18px rgba(0,0,0,.07)}
-    .lnav-stores{display:flex;flex-direction:column;gap:2px;margin-bottom:6px;flex-shrink:0}
-    .lnav-store-btn{height:34px;border-radius:8px;display:flex;align-items:center;padding:0 5px;gap:10px;cursor:pointer;border:1.5px solid transparent;background:none;transition:all .15s;width:100%;flex-shrink:0;white-space:nowrap}
-    .lnav-store-btn:hover{background:var(--surface2)}
-    .lnav-store-btn.active{background:var(--accent-light);border-color:var(--accent-border)}
+    /* store toggle (single button + flyout) */
+    .lnav-store-wrap{position:relative;flex-shrink:0;margin-bottom:6px}
+    .lnav-store-current{height:36px;width:100%;border-radius:9px;display:flex;align-items:center;padding:0 6px;gap:10px;cursor:pointer;border:1.5px solid var(--border);background:#fff;transition:border-color .15s;white-space:nowrap}
+    .lnav-store-current:hover{border-color:#93c5fd}
+    .lnav-store-current.picker-open{border-color:var(--accent);background:var(--accent-light)}
     .lnav-store-logo{width:24px;height:24px;border-radius:6px;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
-    .lnav-store-name{font-size:12px;font-weight:500;color:var(--text2);opacity:0;transition:opacity .08s;pointer-events:none}
-    .left-nav:hover .lnav-store-name{opacity:1;transition:opacity .18s .08s}
-    .lnav-store-btn.active .lnav-store-name{color:var(--accent)}
+    .lnav-current-name{font-size:12px;font-weight:600;color:var(--text);opacity:0;transition:opacity .08s;pointer-events:none;flex:1;text-align:left}
+    .left-nav:hover .lnav-current-name{opacity:1;transition:opacity .18s .08s}
+    .lnav-chevron{opacity:0;transition:opacity .08s;flex-shrink:0;color:var(--text3);margin-left:auto}
+    .left-nav:hover .lnav-chevron{opacity:1;transition:opacity .18s .08s}
+    /* flyout picker */
+    .lnav-store-picker{position:fixed;left:60px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.13);padding:7px;min-width:172px;z-index:99999;display:none;flex-direction:column;gap:2px}
+    .lnav-store-picker.open{display:flex}
+    .lnav-pick-title{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:4px 8px 6px}
+    .lnav-pick-btn{width:100%;height:34px;border-radius:7px;display:flex;align-items:center;gap:10px;padding:0 10px;cursor:pointer;border:none;background:none;font-size:12.5px;font-weight:500;color:var(--text2);transition:all .12s;text-align:left;white-space:nowrap}
+    .lnav-pick-btn:hover{background:var(--surface2);color:var(--text)}
+    .lnav-pick-btn.active{color:var(--accent);background:var(--accent-light);font-weight:600}
+    .lnav-pick-logo{width:22px;height:22px;border-radius:5px;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.07)}
     .lnav-sep{height:1px;background:var(--border);margin:6px 0}
     .lnav-item{position:relative;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:flex-start;cursor:pointer;color:var(--text3);border:none;background:none;transition:background .15s,color .15s;flex-shrink:0;padding:0 10px;gap:10px;white-space:nowrap;width:100%}
     .lnav-item svg{flex-shrink:0}
@@ -400,15 +410,15 @@
 
 <!-- ── Left Nav ── -->
 <nav class="left-nav">
-  <!-- Store toggle -->
-  <div class="lnav-stores">
-    <button class="lnav-store-btn active" id="lnav-store-colosy"   onclick="switchStore('colosy')">  <img class="lnav-store-logo" src="assets/logo-colosy.png"   alt="Colosy">  <span class="lnav-store-name">Colosy</span>  </button>
-    <button class="lnav-store-btn"        id="lnav-store-renazi"   onclick="switchStore('renazi')">  <img class="lnav-store-logo" src="assets/logo-renazi.png"   alt="Renazi">  <span class="lnav-store-name">Renazi</span>  </button>
-    <button class="lnav-store-btn"        id="lnav-store-modeline" onclick="switchStore('modeline')"><img class="lnav-store-logo" src="assets/logo-modeline.png" alt="Modeline"><span class="lnav-store-name">Modeline</span></button>
-    <button class="lnav-store-btn"        id="lnav-store-zenda"    onclick="switchStore('zenda')">   <img class="lnav-store-logo" src="assets/logo-zenda.png"    alt="Zenda">   <span class="lnav-store-name">Zenda</span>   </button>
-    <button class="lnav-store-btn"        id="lnav-store-vezzo"    onclick="switchStore('vezzo')">   <img class="lnav-store-logo" src="assets/logo-vezzo.png"    alt="Vezzo">   <span class="lnav-store-name">Vezzo</span>   </button>
-    <button class="lnav-store-btn"        id="lnav-store-kayse"    onclick="switchStore('kayse')">   <img class="lnav-store-logo" src="assets/logo-kayse.png"    alt="Kayse">   <span class="lnav-store-name">Kayse</span>   </button>
+  <!-- Store toggle (single current + flyout) -->
+  <div class="lnav-store-wrap">
+    <button class="lnav-store-current" id="lnav-store-current" onclick="toggleStorePicker(event)">
+      <img class="lnav-store-logo" id="lnav-current-logo" src="assets/logo-colosy.png" alt="">
+      <span class="lnav-current-name" id="lnav-current-name">Colosy</span>
+      <svg class="lnav-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
   </div>
+  <!-- Flyout picker (outside nav so it's not clipped) -->
   <div class="lnav-sep"></div>
   <!-- View nav -->
   <button class="lnav-item active" id="lnav-dashboard" onclick="switchView('dashboard')">
@@ -424,6 +434,17 @@
     <span class="lnav-label">Chargebacks</span>
   </button>
 </nav>
+
+<!-- ── Store Picker Flyout (outside nav to avoid clip) ── -->
+<div class="lnav-store-picker" id="lnav-store-picker">
+  <div class="lnav-pick-title">Trocar loja</div>
+  <button class="lnav-pick-btn active" data-store="colosy"   onclick="pickStore('colosy')"  ><img class="lnav-pick-logo" src="assets/logo-colosy.png"   alt="">Colosy</button>
+  <button class="lnav-pick-btn"        data-store="renazi"   onclick="pickStore('renazi')"  ><img class="lnav-pick-logo" src="assets/logo-renazi.png"   alt="">Renazi</button>
+  <button class="lnav-pick-btn"        data-store="modeline" onclick="pickStore('modeline')"><img class="lnav-pick-logo" src="assets/logo-modeline.png" alt="">Modeline</button>
+  <button class="lnav-pick-btn"        data-store="zenda"    onclick="pickStore('zenda')"   ><img class="lnav-pick-logo" src="assets/logo-zenda.png"    alt="">Zenda</button>
+  <button class="lnav-pick-btn"        data-store="vezzo"    onclick="pickStore('vezzo')"   ><img class="lnav-pick-logo" src="assets/logo-vezzo.png"    alt="">Vezzo</button>
+  <button class="lnav-pick-btn"        data-store="kayse"    onclick="pickStore('kayse')"   ><img class="lnav-pick-logo" src="assets/logo-kayse.png"    alt="">Kayse</button>
+</div>
 
 <!-- ── Auth Wall ── -->
 <div id="auth-wall">
@@ -935,8 +956,10 @@ function switchStore(store){
   $('hdr-logo').src=logoSrc;
   $('hdr-logo').alt=cfg.name;
   $('hdr-store-name').textContent=cfg.name;
-  // Update nav store toggle active state
-  document.querySelectorAll('.lnav-store-btn').forEach(b=>b.classList.toggle('active',b.id==='lnav-store-'+store));
+  // Update nav store toggle
+  const curLogo=$('lnav-current-logo'); if(curLogo){curLogo.src=logoSrc;curLogo.alt=cfg.name;}
+  const curName=$('lnav-current-name'); if(curName){curName.textContent=cfg.name;}
+  document.querySelectorAll('.lnav-pick-btn').forEach(b=>b.classList.toggle('active',b.dataset.store===store));
   $('ads-sub').textContent=cfg.hasFb?'Google + Facebook · top produtos':'Google Ads · top produtos';
   applyColVisibility();
   $('fb-legend-item').style.display=cfg.hasFb?'flex':'none';
@@ -1847,6 +1870,35 @@ CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];});
 /* ── COGS data: {unitCog: number|null, currency: string} per product per store ── */
 const cogsEdits={}; // store -> {productName -> unitCog}
 CB_STORES.forEach(s=>{cogsEdits[s]={};});
+
+/* ── Store picker flyout ── */
+function toggleStorePicker(e){
+  e.stopPropagation();
+  const picker=$('lnav-store-picker');
+  const btn=$('lnav-store-current');
+  const isOpen=picker.classList.contains('open');
+  picker.classList.toggle('open',!isOpen);
+  btn.classList.toggle('picker-open',!isOpen);
+  if(!isOpen){
+    const rect=btn.getBoundingClientRect();
+    picker.style.top=rect.top+'px';
+    picker.style.left=(rect.right+8)+'px';
+  }
+}
+function pickStore(store){
+  const picker=$('lnav-store-picker');
+  picker.classList.remove('open');
+  $('lnav-store-current').classList.remove('picker-open');
+  switchStore(store);
+}
+document.addEventListener('click',e=>{
+  const picker=$('lnav-store-picker');
+  const btn=$('lnav-store-current');
+  if(picker&&btn&&!picker.contains(e.target)&&!btn.contains(e.target)){
+    picker.classList.remove('open');
+    btn.classList.remove('picker-open');
+  }
+});
 
 function switchView(view){
   $('app').style.display=view==='dashboard'?'block':'none';
