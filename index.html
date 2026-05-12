@@ -300,29 +300,66 @@
     .cb-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s}
     .cb-upload-btn:hover{opacity:.88}
     .cb-file-input{display:none}
-    .cb-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-    .cb-kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-    .cb-kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
-    .cb-kpi-val{font-size:22px;font-weight:700;color:var(--text)}
-    .cb-kpi-val.red{color:var(--red)}
-    .cb-kpi-val.amber{color:var(--amber)}
-    .cb-section-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-    .cb-clear-btn{margin-left:auto;padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer}
+    .cb-upload-accept{font-size:11px;color:var(--text3);margin-top:8px}
+    /* KPIs */
+    .cb-kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+    .cb-kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:15px 18px;position:relative;overflow:hidden}
+    .cb-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;background:var(--kpi-color,var(--accent))}
+    .cb-kpi-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
+    .cb-kpi-val{font-size:20px;font-weight:700;color:var(--text);line-height:1.2}
+    .cb-kpi-sub{font-size:11px;color:var(--text3);margin-top:3px}
+    .cb-kpi.danger{--kpi-color:#ef4444}.cb-kpi.warn{--kpi-color:#f59e0b}.cb-kpi.good{--kpi-color:#10b981}.cb-kpi.info{--kpi-color:#3b82f6}
+    /* Period bar */
+    .cb-period-bar{display:flex;align-items:center;gap:6px;margin-bottom:20px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px}
+    .cb-period-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-right:4px}
+    .cb-period-btn{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:none;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .cb-period-btn:hover{border-color:#93c5fd;color:var(--accent)}
+    .cb-period-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+    .cb-period-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+    .cb-period-dates{display:flex;align-items:center;gap:6px}
+    .cb-period-input{border:1.5px solid var(--border);border-radius:7px;padding:4px 9px;font-size:12px;color:var(--text);outline:none;transition:border-color .15s}
+    .cb-period-input:focus{border-color:#93c5fd}
+    /* Section */
+    .cb-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+    .cb-section-hdr{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .cb-section-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
+    .cb-section-sub{font-size:11.5px;color:var(--text3)}
+    .cb-clear-btn{padding:4px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer}
     .cb-clear-btn:hover{border-color:#f87171;color:var(--red)}
-    .cb-tscroll{overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#fff}
-    .cb-table{width:100%;border-collapse:collapse;font-size:12.5px}
-    .cb-table th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2)}
-    .cb-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
-    .cb-table tr:last-child td{border-bottom:none}
-    .cb-table tr:hover td{background:var(--surface2)}
+    /* Charts grid */
+    .cb-charts-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+    .cb-charts-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+    .cb-chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+    .cb-chart-card.full{grid-column:1/-1}
+    .cb-chart-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+    .cb-chart-sub{font-size:11px;color:var(--text3);margin-bottom:12px}
+    .cb-canvas{max-height:190px}
+    .cb-canvas-tall{max-height:220px}
+    /* Product table */
+    .cb-prod-table{width:100%;border-collapse:collapse;font-size:12.5px}
+    .cb-prod-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1.5px solid var(--border);background:var(--surface2);white-space:nowrap}
+    .cb-prod-table th.r{text-align:right}
+    .cb-prod-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+    .cb-prod-table td.r{text-align:right}
+    .cb-prod-table tr:last-child td{border-bottom:none}
+    .cb-prod-table tr:hover td{background:var(--surface2)}
+    .cb-winrate{display:inline-flex;align-items:center;gap:5px}
+    .cb-winbar{height:5px;border-radius:3px;background:var(--border);width:48px;overflow:hidden}
+    .cb-winbar-fill{height:100%;border-radius:3px;background:#10b981}
+    /* Badges */
     .cb-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
     .cb-badge.won{background:var(--green-light);color:var(--green)}
     .cb-badge.lost{background:var(--red-light);color:var(--red)}
     .cb-badge.pending{background:var(--amber-light);color:var(--amber)}
+    /* Meta bar */
+    .cb-meta-bar{font-size:11.5px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:9px 14px;margin-bottom:16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .cb-meta-bar strong{color:var(--text2);font-weight:500}
+    /* Loading */
+    .cb-loading{text-align:center;padding:56px 24px;color:var(--text3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:14px}
+    .cb-spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:cb-spin .7s linear infinite}
+    @keyframes cb-spin{to{transform:rotate(360deg)}}
     .cb-empty{text-align:center;padding:52px 24px;color:var(--text3);font-size:13px}
-    .cb-col-map{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--text2)}
-    .cb-col-map strong{color:var(--text);font-weight:600}
-
+    .cb-no-data{color:var(--text3);font-size:12px;padding:24px;text-align:center}
     /* ── AI Chat ── */
     .cb-ai-wrap{margin-top:28px;border:1.5px solid var(--accent-border);border-radius:14px;overflow:hidden;background:#fff}
     .cb-ai-header{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--accent-light);border-bottom:1px solid var(--accent-border)}
@@ -357,19 +394,8 @@
     .cb-ai-send{padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;transition:opacity .15s}
     .cb-ai-send:hover{opacity:.88}
     .cb-ai-send:disabled{opacity:.45;cursor:default}
-    .cb-upload-accept{font-size:11px;color:var(--text3);margin-top:8px}
-    /* CB charts & loading */
-    .cb-charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
-    .cb-chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px}
-    .cb-chart-card.full{grid-column:1/-1}
-    .cb-chart-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:14px}
-    .cb-canvas{max-height:190px}
-    .cb-meta-bar{font-size:11.5px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:9px 14px;margin-bottom:18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .cb-meta-bar strong{color:var(--text2);font-weight:500}
-    .cb-loading{text-align:center;padding:56px 24px;color:var(--text3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:14px}
-    .cb-spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:cb-spin .7s linear infinite}
-    @keyframes cb-spin{to{transform:rotate(360deg)}}
-    @media(max-width:700px){.cb-charts-grid{grid-template-columns:1fr}}
+    @media(max-width:900px){.cb-charts-3{grid-template-columns:1fr 1fr}}
+    @media(max-width:700px){.cb-charts-2,.cb-charts-3{grid-template-columns:1fr}}
 
     /* ── COGS view ── */
     #cogs-view{display:none}
@@ -1893,6 +1919,8 @@ const cbChats={};
 const cbMeta={}; // {email, uploadedAt, fileName}
 const cbLoading={}; // loading from Firestore
 CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];cbMeta[s]=null;cbLoading[s]=false;});
+const cbFilter={};
+CB_STORES.forEach(s=>{cbFilter[s]={preset:'all',from:null,to:null};});
 
 /* ── COGS data: {unitCog: number|null, currency: string} per product per store ── */
 const cogsEdits={}; // store -> {productName -> unitCog}
@@ -2147,9 +2175,11 @@ function applyCOGSRows(rows,store){
 
 /* ── Render one store panel ── */
 function renderCBPanel(store){
-  const rows=cbData[store];
+  const allRows=cbData[store];
   const isLoading=cbLoading[store];
-  const hasData=rows.length>0;
+  const hasData=allRows.length>0;
+  const rows=filterCBRows(store);
+  const f=cbFilter[store];
 
   const uploadZone=`
     <div class="cb-upload-zone" id="cb-zone-${store}" onclick="document.getElementById('cb-input-${store}').click()">
@@ -2169,12 +2199,16 @@ function renderCBPanel(store){
   if(isLoading) return `<div class="cb-loading"><div class="cb-spinner"></div>Carregando dados do servidor…</div>`;
   if(!hasData) return uploadZone;
 
+  // Computed stats on filtered rows
   const total=rows.reduce((a,r)=>a+(r._amount||0),0);
   const won=rows.filter(r=>r._status==='won').length;
   const lost=rows.filter(r=>r._status==='lost').length;
   const pending=rows.filter(r=>r._status==='pending').length;
   const amtLost=rows.filter(r=>r._status==='lost').reduce((a,r)=>a+(r._amount||0),0);
-  const cur=rows[0]?._currency||'EUR';
+  const amtWon=rows.filter(r=>r._status==='won').reduce((a,r)=>a+(r._amount||0),0);
+  const cur=allRows[0]?._currency||'EUR';
+  const winRate=won+lost>0?Math.round(won/(won+lost)*100):0;
+  const avgAmt=rows.length>0?(total/rows.length):0;
 
   // Meta bar
   const meta=cbMeta[store];
@@ -2183,73 +2217,175 @@ function renderCBPanel(store){
     const parts=[];
     if(meta.fileName) parts.push(`<strong>${meta.fileName}</strong>`);
     if(meta.email) parts.push(`enviado por <strong>${meta.email}</strong>`);
-    if(meta.uploadedAt) parts.push(meta.uploadedAt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}));
+    if(meta.uploadedAt) parts.push(meta.uploadedAt instanceof Date?meta.uploadedAt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):String(meta.uploadedAt));
     metaBar=`<div class="cb-meta-bar">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       ${parts.join(' · ')}
-      <button style="margin-left:auto;padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer" onclick="cbRefresh('${store}')">↻ Atualizar</button>
-      <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
+      <span style="margin-left:auto;display:flex;gap:6px">
+        <button style="padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer" onclick="cbRefresh('${store}')">↻ Atualizar</button>
+        <button style="padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="document.getElementById('cb-input-${store}').click()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Substituir
+        </button>
+        <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
+        <input type="file" id="cb-input-${store}" class="cb-file-input" accept=".csv,.xls,.xlsx,.txt" onchange="parseCBFile(this.files[0],'${store}')">
+      </span>
     </div>`;
   }
 
-  const summary=`
-    <div class="cb-summary-grid">
-      <div class="cb-kpi"><div class="cb-kpi-label">Total chargebacks</div><div class="cb-kpi-val red">${rows.length}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Valor contestado</div><div class="cb-kpi-val amber">${fmtAmt(total,cur)}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Perdidos</div><div class="cb-kpi-val red">${lost} <span style="font-size:12px;font-weight:500">(${fmtAmt(amtLost,cur)})</span></div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Ganhos</div><div class="cb-kpi-val" style="color:var(--green)">${won}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Pendentes</div><div class="cb-kpi-val amber">${pending}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Taxa de vitória</div><div class="cb-kpi-val" style="color:var(--green)">${won+lost>0?Math.round(won/(won+lost)*100):0}%</div></div>
-    </div>`;
+  // Period picker
+  const presets=[{k:'all',l:'Todos'},{k:'30',l:'30 dias'},{k:'90',l:'90 dias'},{k:'ytd',l:'Este ano'},{k:'12m',l:'12 meses'},{k:'custom',l:'Personalizado'}];
+  const periodBar=`<div class="cb-period-bar">
+    <span class="cb-period-label">Período</span>
+    ${presets.map(p=>`<button class="cb-period-btn${f.preset===p.k?' active':''}" onclick="setCBPeriod('${store}','${p.k}')">${p.l}</button>`).join('')}
+    ${f.preset==='custom'?`<div class="cb-period-sep"></div><div class="cb-period-dates">
+      <input type="date" class="cb-period-input" id="cb-from-${store}" value="${f.from?f.from.toISOString().slice(0,10):''}" onchange="applyCBCustomPeriod('${store}')">
+      <span style="color:var(--text3);font-size:12px">→</span>
+      <input type="date" class="cb-period-input" id="cb-to-${store}" value="${f.to?f.to.toISOString().slice(0,10):''}" onchange="applyCBCustomPeriod('${store}')">
+    </div>`:''}
+    <span style="margin-left:auto;font-size:11.5px;color:var(--text3)">${rows.length} registro${rows.length!==1?'s':''} ${rows.length<allRows.length?`<span style="color:var(--accent)">/ ${allRows.length} total</span>`:''}
+    </span>
+  </div>`;
 
-  // Charts
-  const reasonCol=rows[0]?._reasonCol||null;
-  const dateCol=rows[0]?._dateCol||null;
-  const hasTimeline=!!dateCol;
-  const charts=`
-    <div class="cb-charts-grid">
-      <div class="cb-chart-card">
-        <div class="cb-chart-title">Distribuição por status</div>
-        <canvas class="cb-canvas" id="cb-chart-status-${store}"></canvas>
+  // KPIs
+  const kpis=`<div class="cb-kpi-row">
+    <div class="cb-kpi danger"><div class="cb-kpi-label">Total chargebacks</div><div class="cb-kpi-val">${rows.length}</div><div class="cb-kpi-sub">${fmtAmt(total,cur)} contestado</div></div>
+    <div class="cb-kpi danger"><div class="cb-kpi-label">Valor perdido</div><div class="cb-kpi-val">${fmtAmt(amtLost,cur)}</div><div class="cb-kpi-sub">${lost} caso${lost!==1?'s':''} perdido${lost!==1?'s':''}</div></div>
+    <div class="cb-kpi good"><div class="cb-kpi-label">Taxa de vitória</div><div class="cb-kpi-val">${winRate}%</div><div class="cb-kpi-sub">${won} ganho${won!==1?'s':''} · ${fmtAmt(amtWon,cur)}</div></div>
+    <div class="cb-kpi warn"><div class="cb-kpi-label">Pendentes</div><div class="cb-kpi-val">${pending}</div><div class="cb-kpi-sub">${rows.length>0?Math.round(pending/rows.length*100):0}% do total</div></div>
+    <div class="cb-kpi info"><div class="cb-kpi-label">Valor médio</div><div class="cb-kpi-val">${fmtAmt(avgAmt,cur)}</div><div class="cb-kpi-sub">por chargeback</div></div>
+    <div class="cb-kpi info"><div class="cb-kpi-label">Recuperado</div><div class="cb-kpi-val">${total>0?Math.round(amtWon/total*100):0}%</div><div class="cb-kpi-sub">${fmtAmt(amtWon,cur)} de ${fmtAmt(total,cur)}</div></div>
+  </div>`;
+
+  // Detect available columns
+  const dateCol=allRows[0]?._dateCol||null;
+  const reasonCol=allRows[0]?._reasonCol||null;
+  const financialCol=allRows[0]?._financialCol||null;
+  const fulfillCol=allRows[0]?._fulfillCol||null;
+  const riskCol=allRows[0]?._riskCol||null;
+  const productCol=allRows[0]?._productCol||null;
+  const countryCol=allRows[0]?._countryCol||null;
+
+  // Main timeline chart (full width)
+  const timelineSection=dateCol?`
+    <div class="cb-section" style="margin-bottom:16px">
+      <div class="cb-section-hdr">
+        <div><div class="cb-section-title">Evolução temporal</div><div class="cb-section-sub">Chargebacks e valor contestado por mês</div></div>
       </div>
-      ${reasonCol?`<div class="cb-chart-card"><div class="cb-chart-title">Principais motivos</div><canvas class="cb-canvas" id="cb-chart-reasons-${store}"></canvas></div>`:'<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Motivos não detectados</div><div style="font-size:12px;color:var(--text3);margin-top:8px">Adicione uma coluna "reason" ou "motivo" na planilha.</div></div>'}
-      ${hasTimeline?`<div class="cb-chart-card full"><div class="cb-chart-title">Chargebacks por período</div><canvas class="cb-canvas" style="max-height:160px" id="cb-chart-timeline-${store}"></canvas></div>`:''}
+      <canvas id="cb-chart-timeline-${store}" style="max-height:200px"></canvas>
+    </div>`:'';
+
+  // Row 1: status + reasons
+  const chart1=`<div class="cb-chart-card">
+    <div class="cb-chart-title">Status dos chargebacks</div>
+    <div class="cb-chart-sub">Distribuição por resultado</div>
+    <canvas class="cb-canvas" id="cb-chart-status-${store}"></canvas>
+  </div>`;
+  const chart2=reasonCol?`<div class="cb-chart-card">
+    <div class="cb-chart-title">Principais motivos</div>
+    <div class="cb-chart-sub">Top motivos de disputa</div>
+    <canvas class="cb-canvas" id="cb-chart-reasons-${store}"></canvas>
+  </div>`:`<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Motivos</div><div class="cb-no-data">Coluna "reason" não detectada</div></div>`;
+
+  // Row 2: financial + fulfillment + risk
+  const chart3=financialCol?`<div class="cb-chart-card">
+    <div class="cb-chart-title">Status financeiro</div>
+    <div class="cb-chart-sub">Estado do pagamento</div>
+    <canvas class="cb-canvas" id="cb-chart-financial-${store}"></canvas>
+  </div>`:`<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Status financeiro</div><div class="cb-no-data">Coluna "financial_status" não detectada</div></div>`;
+  const chart4=fulfillCol?`<div class="cb-chart-card">
+    <div class="cb-chart-title">Status de entrega</div>
+    <div class="cb-chart-sub">Fulfillment dos pedidos</div>
+    <canvas class="cb-canvas" id="cb-chart-fulfill-${store}"></canvas>
+  </div>`:`<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Status de entrega</div><div class="cb-no-data">Coluna "fulfillment_status" não detectada</div></div>`;
+  const chart5=riskCol?`<div class="cb-chart-card">
+    <div class="cb-chart-title">Nível de risco</div>
+    <div class="cb-chart-sub">Distribuição por risco</div>
+    <canvas class="cb-canvas" id="cb-chart-risk-${store}"></canvas>
+  </div>`:`<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Nível de risco</div><div class="cb-no-data">Coluna "risk_level" não detectada</div></div>`;
+
+  // Product insights
+  let productSection='';
+  if(productCol||true){
+    // Always show — use productCol if available, else show placeholder
+    productSection=`<div class="cb-section">
+      <div class="cb-section-hdr">
+        <div><div class="cb-section-title">Análise por produto</div><div class="cb-section-sub">Produtos com mais chargebacks${!productCol?' · coluna "product" não detectada':''}</div></div>
+        ${countryCol?`<canvas id="cb-chart-country-${store}" style="max-height:140px;max-width:220px"></canvas>`:''}
+      </div>
+      ${productCol?renderProductTable(rows,productCol,cur):`<div class="cb-no-data" style="padding:32px">Adicione uma coluna "product" ou "product_name" na planilha para ver a análise por produto.</div>`}
     </div>`;
-
-  const cols=rows[0]?._cols||[];
-  const thead=cols.map(c=>`<th>${c}</th>`).join('');
-  const tbody=rows.slice(0,200).map(r=>{
-    const cells=cols.map(c=>{
-      if(c===r._statusCol) return `<td><span class="cb-badge ${r._status}">${r[c]||'—'}</span></td>`;
-      return `<td>${r[c]??'—'}</td>`;
-    }).join('');
-    return `<tr>${cells}</tr>`;
-  }).join('');
-  const moreNote=rows.length>200?`<div style="text-align:center;padding:10px;font-size:11.5px;color:var(--text3)">Mostrando 200 de ${rows.length} registros</div>`:'';
-
-  const table=`
-    <div class="cb-section-title">Registros (${rows.length})</div>
-    <div class="cb-tscroll"><table class="cb-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>
-    ${moreNote}`;
+  }
 
   const aiPanel=renderAIPanel(store);
-  return uploadZone+metaBar+summary+charts+table+aiPanel;
+  return uploadZone+metaBar+periodBar+kpis+timelineSection+
+    `<div class="cb-charts-2" style="margin-bottom:16px">${chart1}${chart2}</div>`+
+    `<div class="cb-charts-3" style="margin-bottom:16px">${chart3}${chart4}${chart5}</div>`+
+    productSection+aiPanel;
+}
+
+function renderProductTable(rows,productCol,cur){
+  if(!rows.length||!productCol)return'';
+  const map={};
+  rows.forEach(r=>{
+    const p=(r[productCol]||'Desconhecido').trim().slice(0,60);
+    if(!map[p])map[p]={total:0,won:0,lost:0,pending:0,amount:0};
+    map[p].total++;
+    map[p][r._status]=(map[p][r._status]||0)+1;
+    map[p].amount+=(r._amount||0);
+  });
+  const sorted=Object.entries(map).sort((a,b)=>b[1].total-a[1].total).slice(0,12);
+  const thead=`<tr><th>Produto</th><th class="r">CBs</th><th class="r">Perdidos</th><th class="r">Ganhos</th><th class="r">Pendentes</th><th class="r">Taxa vitória</th><th class="r">Valor total</th><th class="r">Valor médio</th></tr>`;
+  const tbody=sorted.map(([p,d])=>{
+    const wr=d.won+d.lost>0?Math.round(d.won/(d.won+d.lost)*100):null;
+    const wrDisp=wr!=null?`<div class="cb-winrate"><div class="cb-winbar"><div class="cb-winbar-fill" style="width:${wr}%"></div></div><span style="font-size:11.5px;font-weight:600;color:${wr>=50?'#10b981':'#f59e0b'}">${wr}%</span></div>`:'—';
+    return `<tr>
+      <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p}">${p}</td>
+      <td class="r"><span style="font-weight:700;color:var(--red)">${d.total}</span></td>
+      <td class="r"><span style="color:var(--red)">${d.lost}</span></td>
+      <td class="r"><span style="color:var(--green)">${d.won}</span></td>
+      <td class="r"><span style="color:var(--amber)">${d.pending}</span></td>
+      <td class="r">${wrDisp}</td>
+      <td class="r">${fmtAmt(d.amount,cur)}</td>
+      <td class="r">${fmtAmt(d.total>0?d.amount/d.total:0,cur)}</td>
+    </tr>`;
+  }).join('');
+  return `<div style="overflow-x:auto"><table class="cb-prod-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
 /* ── CB Charts ── */
 const cbChartInstances={};
 function destroyCBCharts(store){
-  ['status','reasons','timeline'].forEach(t=>{
+  ['status','reasons','timeline','financial','fulfill','risk','country'].forEach(t=>{
     const key=`${store}-${t}`;
     if(cbChartInstances[key]){cbChartInstances[key].destroy();delete cbChartInstances[key];}
   });
 }
+
+// Shared Google Ads-like chart defaults
+const GDS_GRID={color:'rgba(0,0,0,.04)',drawBorder:false};
+const GDS_TICKS={font:{size:10.5},color:'#9ca3af'};
+const GDS_LEGEND={display:false};
+
+function mkHBar(el,labels,data,colors,key){
+  if(!el)return;
+  const def='#3b82f6';
+  cbChartInstances[key]=new Chart(el,{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:colors||def,borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',plugins:{legend:GDS_LEGEND,tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.x}}},
+      scales:{x:{grid:GDS_GRID,ticks:GDS_TICKS,beginAtZero:true},y:{grid:{display:false},ticks:{...GDS_TICKS,font:{size:11}}}},
+      maintainAspectRatio:true}
+  });
+}
+
 function initCBCharts(store){
   destroyCBCharts(store);
-  const rows=cbData[store];
+  const rows=filterCBRows(store);
   if(!rows.length)return;
+  const cur=cbData[store][0]?._currency||'EUR';
 
-  // Status donut
+  // ── Status donut
   const statusEl=document.getElementById('cb-chart-status-'+store);
   if(statusEl){
     const won=rows.filter(r=>r._status==='won').length;
@@ -2259,55 +2395,104 @@ function initCBCharts(store){
       type:'doughnut',
       data:{
         labels:['Ganhos','Perdidos','Pendentes'],
-        datasets:[{data:[won,lost,pending],backgroundColor:['#10b981','#ef4444','#f59e0b'],borderWidth:2,borderColor:'#fff'}]
+        datasets:[{data:[won,lost,pending],backgroundColor:['#10b981','#ef4444','#f59e0b'],borderWidth:2,borderColor:'#fff',hoverOffset:4}]
       },
-      options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12}}},cutout:'65%',maintainAspectRatio:true}
+      options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:14,boxWidth:12}}},cutout:'62%',maintainAspectRatio:true}
     });
   }
 
-  // Reasons bar
+  // ── Reasons horizontal bar
   const reasonCol=rows[0]?._reasonCol||null;
   const reasonEl=document.getElementById('cb-chart-reasons-'+store);
   if(reasonEl&&reasonCol){
     const counts={};
     rows.forEach(r=>{const v=(r[reasonCol]||'Desconhecido').trim();counts[v]=(counts[v]||0)+1;});
     const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    cbChartInstances[store+'-reasons']=new Chart(reasonEl,{
-      type:'bar',
+    mkHBar(reasonEl,
+      sorted.map(([k])=>k.length>32?k.slice(0,30)+'…':k),
+      sorted.map(([,v])=>v),
+      sorted.map((_,i)=>`hsl(${210+i*18},80%,${55+i*3}%)`),
+      store+'-reasons');
+  }
+
+  // ── Timeline (Google Ads line chart)
+  const dateCol=rows[0]?._dateCol||null;
+  const timelineEl=document.getElementById('cb-chart-timeline-'+store);
+  if(timelineEl&&dateCol){
+    const monthly={};const amtMap={};
+    rows.forEach(r=>{
+      if(!r._date)return;
+      const key=`${r._date.getFullYear()}-${String(r._date.getMonth()+1).padStart(2,'0')}`;
+      monthly[key]=(monthly[key]||0)+1;
+      amtMap[key]=(amtMap[key]||0)+(r._amount||0);
+    });
+    const labels=Object.keys(monthly).sort();
+    const monthNames=labels.map(k=>{const[y,m]=k.split('-');return new Date(+y,+m-1,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});});
+    cbChartInstances[store+'-timeline']=new Chart(timelineEl,{
+      type:'line',
       data:{
-        labels:sorted.map(([k])=>k.length>30?k.slice(0,28)+'…':k),
-        datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'#3b82f6',borderRadius:4}]
+        labels:monthNames,
+        datasets:[
+          {label:'Chargebacks',data:labels.map(k=>monthly[k]),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.10)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#3b82f6',borderWidth:2,yAxisID:'y'},
+          {label:'Valor ('+cur+')',data:labels.map(k=>+(amtMap[k]||0).toFixed(2)),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.06)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#ef4444',borderWidth:2,yAxisID:'y2',borderDash:[4,2]}
+        ]
       },
       options:{
-        indexAxis:'y',plugins:{legend:{display:false}},
-        scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}},
+        plugins:{legend:{display:true,position:'top',align:'end',labels:{font:{size:11},boxWidth:14,padding:16}}},
+        scales:{
+          y:{grid:GDS_GRID,ticks:{...GDS_TICKS},beginAtZero:true,title:{display:true,text:'Qtd',font:{size:10},color:'#9ca3af'}},
+          y2:{position:'right',grid:{display:false},ticks:{...GDS_TICKS},beginAtZero:true,title:{display:true,text:cur,font:{size:10},color:'#9ca3af'}}
+        },
+        interaction:{mode:'index',intersect:false},
         maintainAspectRatio:true
       }
     });
   }
 
-  // Timeline
-  const dateCol=rows[0]?._dateCol||null;
-  const timelineEl=document.getElementById('cb-chart-timeline-'+store);
-  if(timelineEl&&dateCol){
-    const monthly={};
-    rows.forEach(r=>{
-      const raw=r[dateCol]||'';
-      let d=new Date(raw);
-      if(isNaN(d)){const m=raw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)d=new Date(m[3].length===2?'20'+m[3]:m[3],m[2]-1,m[1]);}
-      if(isNaN(d))return;
-      const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      monthly[key]=(monthly[key]||0)+1;
-    });
-    const labels=Object.keys(monthly).sort();
-    const monthNames=labels.map(k=>{const[y,m]=k.split('-');return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});});
-    cbChartInstances[store+'-timeline']=new Chart(timelineEl,{
-      type:'bar',
-      data:{
-        labels:monthNames,
-        datasets:[{label:'Chargebacks',data:labels.map(k=>monthly[k]),backgroundColor:'rgba(239,68,68,.7)',borderRadius:4}]
-      },
-      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}},maintainAspectRatio:true}
+  // ── Financial status
+  const financialCol=rows[0]?._financialCol||null;
+  const finEl=document.getElementById('cb-chart-financial-'+store);
+  if(finEl&&financialCol){
+    const counts={};
+    rows.forEach(r=>{const v=(r[financialCol]||'Desconhecido').trim().toLowerCase();counts[v]=(counts[v]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const fColors={'paid':'#10b981','refunded':'#3b82f6','partially_refunded':'#60a5fa','pending':'#f59e0b','voided':'#9ca3af','authorized':'#a78bfa'};
+    mkHBar(finEl,sorted.map(([k])=>k),sorted.map(([,v])=>v),sorted.map(([k])=>fColors[k]||'#6b7280'),store+'-financial');
+  }
+
+  // ── Fulfillment status
+  const fulfillCol=rows[0]?._fulfillCol||null;
+  const fulfEl=document.getElementById('cb-chart-fulfill-'+store);
+  if(fulfEl&&fulfillCol){
+    const counts={};
+    rows.forEach(r=>{const v=(r[fulfillCol]||'Desconhecido').trim().toLowerCase();counts[v]=(counts[v]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const fColors={'fulfilled':'#10b981','unfulfilled':'#ef4444','partial':'#f59e0b','restocked':'#3b82f6','in_transit':'#60a5fa'};
+    mkHBar(fulfEl,sorted.map(([k])=>k),sorted.map(([,v])=>v),sorted.map(([k])=>fColors[k]||'#6b7280'),store+'-fulfill');
+  }
+
+  // ── Risk level
+  const riskCol=rows[0]?._riskCol||null;
+  const riskEl=document.getElementById('cb-chart-risk-'+store);
+  if(riskEl&&riskCol){
+    const counts={};
+    rows.forEach(r=>{const v=(r[riskCol]||'Desconhecido').trim().toLowerCase();counts[v]=(counts[v]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const rColors={'high':'#ef4444','medium':'#f59e0b','low':'#10b981','none':'#9ca3af','critical':'#7f1d1d','unknown':'#6b7280'};
+    mkHBar(riskEl,sorted.map(([k])=>k),sorted.map(([,v])=>v),sorted.map(([k])=>rColors[k]||'#6b7280'),store+'-risk');
+  }
+
+  // ── Country distribution
+  const countryCol=rows[0]?._countryCol||null;
+  const countryEl=document.getElementById('cb-chart-country-'+store);
+  if(countryEl&&countryCol){
+    const counts={};
+    rows.forEach(r=>{const v=(r[countryCol]||'?').trim();counts[v]=(counts[v]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    cbChartInstances[store+'-country']=new Chart(countryEl,{
+      type:'doughnut',
+      data:{labels:sorted.map(([k])=>k),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'],borderWidth:2,borderColor:'#fff'}]},
+      options:{plugins:{legend:{position:'right',labels:{font:{size:10},padding:8,boxWidth:10}}},cutout:'50%',maintainAspectRatio:true}
     });
   }
 }
@@ -2486,6 +2671,11 @@ const DATE_COLS=['date','data','fecha','datum','created','created_at','chargebac
 const ORDER_COLS=['order','pedido','order_id','order_number','commande','bestellung','número'];
 const REASON_COLS=['reason','motivo','raison','grund','chargeback_reason','dispute_reason'];
 const CURRENCY_COLS=['currency','moeda','devise','währung'];
+const FINANCIAL_COLS=['financial_status','financialstate','financial_state','payment_status','estado_financeiro','pagamento'];
+const FULFILL_COLS=['fulfillment_status','fulfillmentstate','fulfillment_state','shipping_status','estado_entrega','entrega'];
+const RISK_COLS=['risk_level','risk','risk_score','fraud_risk','risco','nivel_risco'];
+const PRODUCT_COLS=['product','product_name','product_title','item','produto','titulo','title','nome_produto','item_name','sku_name'];
+const COUNTRY_COLS=['country','pais','país','billing_country','pais_faturamento','land'];
 
 function matchCol(headers,candidates){
   for(const c of candidates){
@@ -2525,15 +2715,31 @@ function parseCBCSV(text,store,skipSave=false){
   const currencyCol=matchCol(headers,CURRENCY_COLS);
   const reasonCol=matchCol(headers,REASON_COLS);
   const dateCol=matchCol(headers,DATE_COLS);
+  const financialCol=matchCol(headers,FINANCIAL_COLS);
+  const fulfillCol=matchCol(headers,FULFILL_COLS);
+  const riskCol=matchCol(headers,RISK_COLS);
+  const productCol=matchCol(headers,PRODUCT_COLS);
+  const countryCol=matchCol(headers,COUNTRY_COLS);
   const rows=[];
   for(let i=1;i<lines.length;i++){
     const vals=splitCSVLine(lines[i],sep);
     if(vals.filter(v=>v.trim()).length<2)continue;
-    const row={_cols:headers,_statusCol:statusCol,_reasonCol:reasonCol,_dateCol:dateCol};
+    const row={_cols:headers,_statusCol:statusCol,_reasonCol:reasonCol,_dateCol:dateCol,
+      _financialCol:financialCol,_fulfillCol:fulfillCol,_riskCol:riskCol,_productCol:productCol,_countryCol:countryCol};
     headers.forEach((h,idx)=>{row[h]=(vals[idx]||'').trim().replace(/^"|"$/g,'');});
     if(amtCol){const raw=row[amtCol].replace(/[€$£\s]/g,'').replace(',','.');row._amount=parseFloat(raw)||0;}
     row._status=statusCol?detectStatus(row[statusCol]):'pending';
     row._currency=currencyCol?row[currencyCol]||'EUR':'EUR';
+    // Parse date
+    if(dateCol){
+      const raw=row[dateCol]||'';
+      let d=new Date(raw);
+      if(isNaN(d.getTime())){
+        const m=raw.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/);
+        if(m)d=new Date(m[3].length===2?'20'+m[3]:m[3],parseInt(m[2])-1,parseInt(m[1]));
+      }
+      row._date=isNaN(d.getTime())?null:d;
+    }else{row._date=null;}
     rows.push(row);
   }
   cbData[store]=rows;
@@ -2554,6 +2760,36 @@ function splitCSVLine(line,sep){
   const r=[];let cur='';let q=false;
   for(const ch of line){if(ch==='"')q=!q;else if(ch===','&&!q){r.push(cur);cur='';}else cur+=ch;}
   r.push(cur);return r;
+}
+
+function filterCBRows(store){
+  const rows=cbData[store];
+  const f=cbFilter[store];
+  if(!f||(!f.from&&!f.to))return rows;
+  return rows.filter(r=>{
+    if(!r._date)return true;
+    if(f.from&&r._date<f.from)return false;
+    if(f.to&&r._date>f.to)return false;
+    return true;
+  });
+}
+function setCBPeriod(store,preset,customFrom,customTo){
+  const f=cbFilter[store];
+  f.preset=preset;
+  const now=new Date();
+  if(preset==='30'){f.from=new Date(now-30*864e5);f.to=null;}
+  else if(preset==='90'){f.from=new Date(now-90*864e5);f.to=null;}
+  else if(preset==='12m'){f.from=new Date(now.getFullYear()-1,now.getMonth(),now.getDate());f.to=null;}
+  else if(preset==='ytd'){f.from=new Date(now.getFullYear(),0,1);f.to=null;}
+  else if(preset==='custom'){f.from=customFrom?new Date(customFrom):null;f.to=customTo?new Date(customTo+'T23:59:59'):null;}
+  else{f.from=null;f.to=null;}
+  renderCBView();
+  setTimeout(()=>initCBCharts(store),50);
+}
+function applyCBCustomPeriod(store){
+  const fromEl=document.getElementById('cb-from-'+store);
+  const toEl=document.getElementById('cb-to-'+store);
+  setCBPeriod(store,'custom',fromEl?.value,toEl?.value);
 }
 
 function clearCBData(store){
