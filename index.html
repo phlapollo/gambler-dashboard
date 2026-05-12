@@ -6,6 +6,8 @@
   <title>Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="https://accounts.google.com/gsi/client" async></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -356,6 +358,18 @@
     .cb-ai-send:hover{opacity:.88}
     .cb-ai-send:disabled{opacity:.45;cursor:default}
     .cb-upload-accept{font-size:11px;color:var(--text3);margin-top:8px}
+    /* CB charts & loading */
+    .cb-charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+    .cb-chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+    .cb-chart-card.full{grid-column:1/-1}
+    .cb-chart-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:14px}
+    .cb-canvas{max-height:190px}
+    .cb-meta-bar{font-size:11.5px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:9px 14px;margin-bottom:18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .cb-meta-bar strong{color:var(--text2);font-weight:500}
+    .cb-loading{text-align:center;padding:56px 24px;color:var(--text3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:14px}
+    .cb-spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:cb-spin .7s linear infinite}
+    @keyframes cb-spin{to{transform:rotate(360deg)}}
+    @media(max-width:700px){.cb-charts-grid{grid-template-columns:1fr}}
 
     /* ── COGS view ── */
     #cogs-view{display:none}
@@ -1867,11 +1881,81 @@ const CB_STORES=['colosy','renazi','modeline','zenda','vezzo','kayse'];
 let cbCurrentStore='colosy';
 const cbData={};
 const cbChats={};
-CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];});
+const cbMeta={}; // {email, uploadedAt, fileName}
+const cbLoading={}; // loading from Firestore
+CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];cbMeta[s]=null;cbLoading[s]=false;});
 
 /* ── COGS data: {unitCog: number|null, currency: string} per product per store ── */
 const cogsEdits={}; // store -> {productName -> unitCog}
 CB_STORES.forEach(s=>{cogsEdits[s]={};});
+
+/* ── Firebase ── */
+const FB_CONFIG={
+  apiKey:'AIzaSyDuxXFfHttRHKR4NWYDG4xcVd7YM2QftzI',
+  authDomain:'dash-gbl.firebaseapp.com',
+  projectId:'dash-gbl',
+  storageBucket:'dash-gbl.firebasestorage.app',
+  messagingSenderId:'700016035869',
+  appId:'1:700016035869:web:239d8a59f59217caf21ef4'
+};
+let fbDB=null;
+function initFirebase(){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fbDB=firebase.firestore();
+  }catch(e){console.error('Firebase init error:',e);}
+}
+async function saveCBToFS(store,rows,meta){
+  if(!fbDB)return;
+  try{
+    const cols=rows[0]?._cols||[];
+    const statusCol=rows[0]?._statusCol||null;
+    const reasonCol=rows[0]?._reasonCol||null;
+    const dateCol=rows[0]?._dateCol||null;
+    const cleanRows=rows.map(r=>{
+      const c={};
+      cols.forEach(k=>{c[k]=r[k]??'';});
+      c._status=r._status;c._amount=r._amount||0;c._currency=r._currency||'EUR';
+      return c;
+    });
+    await fbDB.collection('chargebacks').doc(store).set({
+      cols,statusCol,reasonCol,dateCol,
+      rows:cleanRows,
+      uploadedBy:meta?.email||'',
+      uploadedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      fileName:meta?.fileName||''
+    });
+  }catch(e){console.error('FB save error:',e);}
+}
+async function loadCBFromFS(store){
+  if(!fbDB)return null;
+  try{
+    const doc=await fbDB.collection('chargebacks').doc(store).get();
+    if(!doc.exists)return null;
+    const d=doc.data();
+    const rows=(d.rows||[]).map(r=>({
+      ...r,_cols:d.cols||[],_statusCol:d.statusCol||null,
+      _reasonCol:d.reasonCol||null,_dateCol:d.dateCol||null
+    }));
+    let uploadedAt=null;
+    if(d.uploadedAt?.toDate) uploadedAt=d.uploadedAt.toDate();
+    return{rows,meta:{email:d.uploadedBy,uploadedAt,fileName:d.fileName}};
+  }catch(e){console.error('FB load error:',e);return null;}
+}
+async function clearCBFromFS(store){
+  if(!fbDB)return;
+  try{await fbDB.collection('chargebacks').doc(store).delete();}catch(e){}
+}
+async function loadCBForStore(store){
+  if(cbData[store].length>0)return;
+  cbLoading[store]=true;
+  renderCBView();
+  const result=await loadCBFromFS(store);
+  cbLoading[store]=false;
+  if(result){cbData[store]=result.rows;cbMeta[store]=result.meta;}
+  renderCBView();
+  if(cbData[store].length>0) setTimeout(()=>initCBCharts(store),50);
+}
 
 /* ── Store picker flyout ── */
 function toggleStorePicker(e){
@@ -1910,9 +1994,7 @@ function switchView(view){
   $('lnav-cogs').classList.toggle('active',view==='cogs');
   $('lnav-cb').classList.toggle('active',view==='cb');
   if(view==='cb'){
-    renderCBView();
-    const label=document.getElementById('cb-global-key-label');
-    if(label) label.textContent=getAIKey()?'✓ Chave configurada':'Configurar chave Gemini';
+    loadCBForStore(currentStore);
   }
   if(view==='cogs') renderCOGSView();
 }
@@ -1935,6 +2017,7 @@ function renderCBView(){
     zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
     zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCBFile(f,s);});
   }
+  if(cbData[s].length>0) setTimeout(()=>initCBCharts(s),50);
 }
 
 /* ── COGS View ── */
@@ -2059,6 +2142,7 @@ function applyCOGSRows(rows,store){
 /* ── Render one store panel ── */
 function renderCBPanel(store){
   const rows=cbData[store];
+  const isLoading=cbLoading[store];
   const hasData=rows.length>0;
 
   const uploadZone=`
@@ -2076,6 +2160,7 @@ function renderCBPanel(store){
       <input type="file" id="cb-input-${store}" class="cb-file-input" accept=".csv,.xls,.xlsx,.txt" onchange="parseCBFile(this.files[0],'${store}')">
     </div>`;
 
+  if(isLoading) return `<div class="cb-loading"><div class="cb-spinner"></div>Carregando dados do servidor…</div>`;
   if(!hasData) return uploadZone;
 
   const total=rows.reduce((a,r)=>a+(r._amount||0),0);
@@ -2085,6 +2170,22 @@ function renderCBPanel(store){
   const amtLost=rows.filter(r=>r._status==='lost').reduce((a,r)=>a+(r._amount||0),0);
   const cur=rows[0]?._currency||'EUR';
 
+  // Meta bar
+  const meta=cbMeta[store];
+  let metaBar='';
+  if(meta&&(meta.email||meta.uploadedAt||meta.fileName)){
+    const parts=[];
+    if(meta.fileName) parts.push(`<strong>${meta.fileName}</strong>`);
+    if(meta.email) parts.push(`enviado por <strong>${meta.email}</strong>`);
+    if(meta.uploadedAt) parts.push(meta.uploadedAt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}));
+    metaBar=`<div class="cb-meta-bar">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ${parts.join(' · ')}
+      <button style="margin-left:auto;padding:3px 10px;font-size:11px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer" onclick="cbRefresh('${store}')">↻ Atualizar</button>
+      <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
+    </div>`;
+  }
+
   const summary=`
     <div class="cb-summary-grid">
       <div class="cb-kpi"><div class="cb-kpi-label">Total chargebacks</div><div class="cb-kpi-val red">${rows.length}</div></div>
@@ -2093,6 +2194,20 @@ function renderCBPanel(store){
       <div class="cb-kpi"><div class="cb-kpi-label">Ganhos</div><div class="cb-kpi-val" style="color:var(--green)">${won}</div></div>
       <div class="cb-kpi"><div class="cb-kpi-label">Pendentes</div><div class="cb-kpi-val amber">${pending}</div></div>
       <div class="cb-kpi"><div class="cb-kpi-label">Taxa de vitória</div><div class="cb-kpi-val" style="color:var(--green)">${won+lost>0?Math.round(won/(won+lost)*100):0}%</div></div>
+    </div>`;
+
+  // Charts
+  const reasonCol=rows[0]?._reasonCol||null;
+  const dateCol=rows[0]?._dateCol||null;
+  const hasTimeline=!!dateCol;
+  const charts=`
+    <div class="cb-charts-grid">
+      <div class="cb-chart-card">
+        <div class="cb-chart-title">Distribuição por status</div>
+        <canvas class="cb-canvas" id="cb-chart-status-${store}"></canvas>
+      </div>
+      ${reasonCol?`<div class="cb-chart-card"><div class="cb-chart-title">Principais motivos</div><canvas class="cb-canvas" id="cb-chart-reasons-${store}"></canvas></div>`:'<div class="cb-chart-card"><div class="cb-chart-title" style="color:var(--text3)">Motivos não detectados</div><div style="font-size:12px;color:var(--text3);margin-top:8px">Adicione uma coluna "reason" ou "motivo" na planilha.</div></div>'}
+      ${hasTimeline?`<div class="cb-chart-card full"><div class="cb-chart-title">Chargebacks por período</div><canvas class="cb-canvas" style="max-height:160px" id="cb-chart-timeline-${store}"></canvas></div>`:''}
     </div>`;
 
   const cols=rows[0]?._cols||[];
@@ -2107,16 +2222,93 @@ function renderCBPanel(store){
   const moreNote=rows.length>200?`<div style="text-align:center;padding:10px;font-size:11.5px;color:var(--text3)">Mostrando 200 de ${rows.length} registros</div>`:'';
 
   const table=`
-    <div class="cb-section-title">
-      Registros (${rows.length})
-      <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
-    </div>
+    <div class="cb-section-title">Registros (${rows.length})</div>
     <div class="cb-tscroll"><table class="cb-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>
     ${moreNote}`;
 
   const aiPanel=renderAIPanel(store);
+  return uploadZone+metaBar+summary+charts+table+aiPanel;
+}
 
-  return uploadZone+summary+table+aiPanel;
+/* ── CB Charts ── */
+const cbChartInstances={};
+function destroyCBCharts(store){
+  ['status','reasons','timeline'].forEach(t=>{
+    const key=`${store}-${t}`;
+    if(cbChartInstances[key]){cbChartInstances[key].destroy();delete cbChartInstances[key];}
+  });
+}
+function initCBCharts(store){
+  destroyCBCharts(store);
+  const rows=cbData[store];
+  if(!rows.length)return;
+
+  // Status donut
+  const statusEl=document.getElementById('cb-chart-status-'+store);
+  if(statusEl){
+    const won=rows.filter(r=>r._status==='won').length;
+    const lost=rows.filter(r=>r._status==='lost').length;
+    const pending=rows.filter(r=>r._status==='pending').length;
+    cbChartInstances[store+'-status']=new Chart(statusEl,{
+      type:'doughnut',
+      data:{
+        labels:['Ganhos','Perdidos','Pendentes'],
+        datasets:[{data:[won,lost,pending],backgroundColor:['#10b981','#ef4444','#f59e0b'],borderWidth:2,borderColor:'#fff'}]
+      },
+      options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12}}},cutout:'65%',maintainAspectRatio:true}
+    });
+  }
+
+  // Reasons bar
+  const reasonCol=rows[0]?._reasonCol||null;
+  const reasonEl=document.getElementById('cb-chart-reasons-'+store);
+  if(reasonEl&&reasonCol){
+    const counts={};
+    rows.forEach(r=>{const v=(r[reasonCol]||'Desconhecido').trim();counts[v]=(counts[v]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    cbChartInstances[store+'-reasons']=new Chart(reasonEl,{
+      type:'bar',
+      data:{
+        labels:sorted.map(([k])=>k.length>30?k.slice(0,28)+'…':k),
+        datasets:[{data:sorted.map(([,v])=>v),backgroundColor:'#3b82f6',borderRadius:4}]
+      },
+      options:{
+        indexAxis:'y',plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}},
+        maintainAspectRatio:true
+      }
+    });
+  }
+
+  // Timeline
+  const dateCol=rows[0]?._dateCol||null;
+  const timelineEl=document.getElementById('cb-chart-timeline-'+store);
+  if(timelineEl&&dateCol){
+    const monthly={};
+    rows.forEach(r=>{
+      const raw=r[dateCol]||'';
+      let d=new Date(raw);
+      if(isNaN(d)){const m=raw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m)d=new Date(m[3].length===2?'20'+m[3]:m[3],m[2]-1,m[1]);}
+      if(isNaN(d))return;
+      const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      monthly[key]=(monthly[key]||0)+1;
+    });
+    const labels=Object.keys(monthly).sort();
+    const monthNames=labels.map(k=>{const[y,m]=k.split('-');return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});});
+    cbChartInstances[store+'-timeline']=new Chart(timelineEl,{
+      type:'bar',
+      data:{
+        labels:monthNames,
+        datasets:[{label:'Chargebacks',data:labels.map(k=>monthly[k]),backgroundColor:'rgba(239,68,68,.7)',borderRadius:4}]
+      },
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}},maintainAspectRatio:true}
+    });
+  }
+}
+
+async function cbRefresh(store){
+  cbData[store]=[];cbMeta[store]=null;
+  await loadCBForStore(store);
 }
 
 /* ── AI Panel ── */
@@ -2297,8 +2489,10 @@ function matchCol(headers,candidates){
   return null;
 }
 
+let cbPendingFile={store:null,name:null};
 function parseCBFile(file,store){
   if(!file)return;
+  cbPendingFile={store,name:file.name};
   const ext=file.name.split('.').pop().toLowerCase();
   if(ext==='xls'||ext==='xlsx'){
     const reader=new FileReader();
@@ -2314,7 +2508,6 @@ function parseCBFile(file,store){
     reader.readAsText(file,'utf-8');
   }
 }
-
 function parseCBCSV(text,store){
   const firstLine=text.split('\n')[0];
   const sep=firstLine.includes('\t')?'\t':firstLine.split(';').length>firstLine.split(',').length?';':',';
@@ -2324,11 +2517,13 @@ function parseCBCSV(text,store){
   const amtCol=matchCol(headers,AMT_COLS);
   const statusCol=matchCol(headers,STATUS_COLS);
   const currencyCol=matchCol(headers,CURRENCY_COLS);
+  const reasonCol=matchCol(headers,REASON_COLS);
+  const dateCol=matchCol(headers,DATE_COLS);
   const rows=[];
   for(let i=1;i<lines.length;i++){
     const vals=splitCSVLine(lines[i],sep);
     if(vals.filter(v=>v.trim()).length<2)continue;
-    const row={_cols:headers,_statusCol:statusCol};
+    const row={_cols:headers,_statusCol:statusCol,_reasonCol:reasonCol,_dateCol:dateCol};
     headers.forEach((h,idx)=>{row[h]=(vals[idx]||'').trim().replace(/^"|"$/g,'');});
     if(amtCol){const raw=row[amtCol].replace(/[€$£\s]/g,'').replace(',','.');row._amount=parseFloat(raw)||0;}
     row._status=statusCol?detectStatus(row[statusCol]):'pending';
@@ -2337,7 +2532,14 @@ function parseCBCSV(text,store){
   }
   cbData[store]=rows;
   cbChats[store]=[];
-  renderCBView();cbSwitchStore(store);
+  // Get current user email from session
+  let email='';
+  try{const u=JSON.parse(sessionStorage.getItem('gbl_auth_user'));email=u?.email||'';}catch(e){}
+  const meta={email,fileName:cbPendingFile.name||''};
+  cbMeta[store]=meta;
+  saveCBToFS(store,rows,meta);
+  renderCBView();
+  setTimeout(()=>initCBCharts(store),50);
 }
 
 function splitCSVLine(line,sep){
@@ -2348,7 +2550,9 @@ function splitCSVLine(line,sep){
 }
 
 function clearCBData(store){
-  cbData[store]=[];cbChats[store]=[];renderCBView();cbSwitchStore(store);
+  cbData[store]=[];cbChats[store]=[];cbMeta[store]=null;
+  clearCBFromFS(store);
+  renderCBView();
 }
 
 /* ── Google Auth ── */
@@ -2425,6 +2629,7 @@ function initAuth(){
 }
 
 loadCOGSData();
+initFirebase();
 // Wait for GIS script to load
 if(window.google&&window.google.accounts){
   initAuth();
