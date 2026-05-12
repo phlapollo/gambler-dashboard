@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,6 +300,42 @@
     .cb-empty{text-align:center;padding:52px 24px;color:var(--text3);font-size:13px}
     .cb-col-map{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--text2)}
     .cb-col-map strong{color:var(--text);font-weight:600}
+
+    /* ── AI Chat ── */
+    .cb-ai-wrap{margin-top:28px;border:1.5px solid var(--accent-border);border-radius:14px;overflow:hidden;background:#fff}
+    .cb-ai-header{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--accent-light);border-bottom:1px solid var(--accent-border)}
+    .cb-ai-header-icon{display:flex;align-items:center;color:var(--accent)}
+    .cb-ai-title{font-size:13px;font-weight:700;color:var(--accent);flex:1}
+    .cb-ai-sub{font-size:11px;color:#60a5fa}
+    .cb-ai-key-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+    .cb-ai-key-btn{font-size:11px;font-weight:500;color:var(--accent);background:none;border:1px solid var(--accent-border);border-radius:5px;padding:3px 9px;cursor:pointer}
+    .cb-ai-key-btn:hover{background:var(--accent);color:#fff}
+    .cb-ai-body{padding:0}
+    .cb-ai-key-panel{padding:16px 18px;border-bottom:1px solid var(--border);background:var(--surface2);display:none}
+    .cb-ai-key-panel.open{display:block}
+    .cb-ai-key-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px}
+    .cb-ai-key-row{display:flex;gap:8px}
+    .cb-ai-key-input{flex:1;border:1.5px solid var(--border);border-radius:7px;padding:7px 12px;font-size:12.5px;font-family:monospace;outline:none;color:var(--text)}
+    .cb-ai-key-input:focus{border-color:#93c5fd}
+    .cb-ai-key-save{padding:7px 14px;border-radius:7px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer}
+    .cb-ai-messages{padding:16px 18px;display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto}
+    .cb-ai-msg{display:flex;flex-direction:column;gap:4px}
+    .cb-ai-msg.user{align-items:flex-end}
+    .cb-ai-msg.assistant{align-items:flex-start}
+    .cb-ai-bubble{padding:10px 14px;border-radius:12px;font-size:12.5px;line-height:1.6;max-width:88%}
+    .cb-ai-msg.user .cb-ai-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px}
+    .cb-ai-msg.assistant .cb-ai-bubble{background:var(--surface2);color:var(--text);border-bottom-left-radius:3px;border:1px solid var(--border);white-space:pre-wrap}
+    .cb-ai-bubble.loading{color:var(--text3);font-style:italic}
+    .cb-ai-actions{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+    .cb-ai-quick{font-size:11.5px;font-weight:500;color:var(--accent);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:20px;padding:5px 12px;cursor:pointer;transition:all .15s}
+    .cb-ai-quick:hover{background:var(--accent);color:#fff}
+    .cb-ai-input-row{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2)}
+    .cb-ai-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 13px;font-size:12.5px;font-family:inherit;outline:none;resize:none;height:38px;color:var(--text)}
+    .cb-ai-input:focus{border-color:#93c5fd}
+    .cb-ai-send{padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+    .cb-ai-send:hover{opacity:.88}
+    .cb-ai-send:disabled{opacity:.45;cursor:default}
+    .cb-upload-accept{font-size:11px;color:var(--text3);margin-top:8px}
 
     /* ── Auth wall ── */
     #auth-wall{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:var(--bg)}
@@ -1718,9 +1755,9 @@ window.addEventListener('load',()=>{
 /* ── View switcher ── */
 const CB_STORES=['colosy','renazi','modeline','zenda','vezzo','kayse'];
 let cbCurrentStore='colosy';
-// cbData[store] = array of parsed row objects
 const cbData={};
-CB_STORES.forEach(s=>cbData[s]=[]);
+const cbChats={};
+CB_STORES.forEach(s=>{cbData[s]=[];cbChats[s]=[];});
 
 function switchView(view){
   const isDash=view==='dashboard';
@@ -1731,179 +1768,299 @@ function switchView(view){
   if(!isDash) renderCBView();
 }
 
-/* ── Chargeback logic ── */
+/* ── Chargeback store tabs ── */
 function cbSwitchStore(store){
   cbCurrentStore=store;
   document.querySelectorAll('.cb-tab').forEach(t=>t.classList.toggle('active',t.dataset.store===store));
   document.querySelectorAll('.cb-panel').forEach(p=>p.classList.toggle('active',p.dataset.store===store));
 }
 
+/* ── Render entire CB view ── */
 function renderCBView(){
   const wrap=$('cb-panels');
   wrap.innerHTML=CB_STORES.map(s=>`
     <div class="cb-panel${s===cbCurrentStore?' active':''}" data-store="${s}">
       ${renderCBPanel(s)}
     </div>`).join('');
-  // Re-attach drag events
   CB_STORES.forEach(s=>{
     const zone=document.getElementById('cb-zone-'+s);
     if(!zone)return;
     zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
     zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
-    zone.addEventListener('drop',e=>{
-      e.preventDefault();zone.classList.remove('drag');
-      const file=e.dataTransfer.files[0];
-      if(file) parseCBFile(file,s);
-    });
+    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCBFile(f,s);});
   });
 }
 
+/* ── Render one store panel ── */
 function renderCBPanel(store){
   const rows=cbData[store];
   const hasData=rows.length>0;
+
   const uploadZone=`
     <div class="cb-upload-zone" id="cb-zone-${store}" onclick="document.getElementById('cb-input-${store}').click()">
       <div class="cb-upload-icon">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
-      <div class="cb-upload-title">Upload relatório de chargeback</div>
-      <div class="cb-upload-sub">Arraste o arquivo CSV aqui ou clique para selecionar</div>
+      <div class="cb-upload-title">${hasData?'Substituir relatório':'Enviar relatório de chargeback'}</div>
+      <div class="cb-upload-sub">Arraste o arquivo aqui ou clique para selecionar</div>
       <button class="cb-upload-btn" onclick="event.stopPropagation();document.getElementById('cb-input-${store}').click()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        ${hasData?'Substituir arquivo':'Selecionar arquivo CSV'}
+        Selecionar arquivo
       </button>
-      <input type="file" id="cb-input-${store}" class="cb-file-input" accept=".csv,.txt" onchange="parseCBFile(this.files[0],'${store}')">
+      <div class="cb-upload-accept">CSV, XLS ou XLSX · qualquer separador</div>
+      <input type="file" id="cb-input-${store}" class="cb-file-input" accept=".csv,.xls,.xlsx,.txt" onchange="parseCBFile(this.files[0],'${store}')">
     </div>`;
+
   if(!hasData) return uploadZone;
 
-  // Summary
   const total=rows.reduce((a,r)=>a+(r._amount||0),0);
   const won=rows.filter(r=>r._status==='won').length;
   const lost=rows.filter(r=>r._status==='lost').length;
   const pending=rows.filter(r=>r._status==='pending').length;
   const amtLost=rows.filter(r=>r._status==='lost').reduce((a,r)=>a+(r._amount||0),0);
+  const cur=rows[0]?._currency||'EUR';
 
   const summary=`
     <div class="cb-summary-grid">
       <div class="cb-kpi"><div class="cb-kpi-label">Total chargebacks</div><div class="cb-kpi-val red">${rows.length}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Valor total</div><div class="cb-kpi-val amber">${fmtAmt(total,rows[0]?._currency)}</div></div>
-      <div class="cb-kpi"><div class="cb-kpi-label">Perdidos</div><div class="cb-kpi-val red">${lost} <span style="font-size:13px;font-weight:500">(${fmtAmt(amtLost,rows[0]?._currency)})</span></div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Valor contestado</div><div class="cb-kpi-val amber">${fmtAmt(total,cur)}</div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Perdidos</div><div class="cb-kpi-val red">${lost} <span style="font-size:12px;font-weight:500">(${fmtAmt(amtLost,cur)})</span></div></div>
       <div class="cb-kpi"><div class="cb-kpi-label">Ganhos</div><div class="cb-kpi-val" style="color:var(--green)">${won}</div></div>
       <div class="cb-kpi"><div class="cb-kpi-label">Pendentes</div><div class="cb-kpi-val amber">${pending}</div></div>
+      <div class="cb-kpi"><div class="cb-kpi-label">Taxa de vitória</div><div class="cb-kpi-val" style="color:var(--green)">${won+lost>0?Math.round(won/(won+lost)*100):0}%</div></div>
     </div>`;
 
-  // Table — show all detected columns
   const cols=rows[0]?._cols||[];
   const thead=cols.map(c=>`<th>${c}</th>`).join('');
-  const tbody=rows.map(r=>{
+  const tbody=rows.slice(0,200).map(r=>{
     const cells=cols.map(c=>{
       if(c===r._statusCol) return `<td><span class="cb-badge ${r._status}">${r[c]||'—'}</span></td>`;
       return `<td>${r[c]??'—'}</td>`;
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
+  const moreNote=rows.length>200?`<div style="text-align:center;padding:10px;font-size:11.5px;color:var(--text3)">Mostrando 200 de ${rows.length} registros</div>`:'';
 
   const table=`
     <div class="cb-section-title">
       Registros (${rows.length})
       <button class="cb-clear-btn" onclick="clearCBData('${store}')">✕ Limpar</button>
     </div>
-    <div class="cb-tscroll"><table class="cb-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+    <div class="cb-tscroll"><table class="cb-table"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>
+    ${moreNote}`;
 
-  return uploadZone+summary+table;
+  const aiPanel=renderAIPanel(store);
+
+  return uploadZone+summary+table+aiPanel;
 }
 
+/* ── AI Panel ── */
+const AI_KEY='gbl_ai_key';
+function getAIKey(){return localStorage.getItem(AI_KEY)||'';}
+function saveAIKey(k){localStorage.setItem(AI_KEY,k.trim());}
+
+function renderAIPanel(store){
+  const hasKey=!!getAIKey();
+  const msgs=cbChats[store];
+  const keyStatus=hasKey
+    ?`<button class="cb-ai-key-btn" onclick="cbToggleKeyPanel('${store}')">🔑 Chave configurada</button>`
+    :`<button class="cb-ai-key-btn" style="border-color:#f87171;color:var(--red)" onclick="cbToggleKeyPanel('${store}')">⚠ Inserir chave API</button>`;
+
+  const keyPanel=`
+    <div class="cb-ai-key-panel" id="cb-key-panel-${store}">
+      <div class="cb-ai-key-label">Chave da API Anthropic (Claude)</div>
+      <div class="cb-ai-key-row">
+        <input class="cb-ai-key-input" type="password" id="cb-key-input-${store}" placeholder="sk-ant-..." value="${getAIKey()}">
+        <button class="cb-ai-key-save" onclick="cbSaveKey('${store}')">Salvar</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:7px">Obtenha sua chave em console.anthropic.com · Armazenada localmente no navegador.</div>
+    </div>`;
+
+  const messagesHtml=msgs.length===0
+    ?`<div style="text-align:center;padding:24px;font-size:12.5px;color:var(--text3)">Clique em uma sugestão abaixo ou escreva sua pergunta.</div>`
+    :msgs.map(m=>`<div class="cb-ai-msg ${m.role}"><div class="cb-ai-bubble${m.loading?' loading':''}">${m.content}</div></div>`).join('');
+
+  const quickBtns=[
+    'Quais os motivos mais frequentes?',
+    'Quais pedidos têm maior risco?',
+    'Como reduzir a taxa de chargeback?',
+    'Análise de padrão por valor',
+  ].map(q=>`<button class="cb-ai-quick" onclick="cbQuick('${store}',this.textContent)">${q}</button>`).join('');
+
+  return `
+    <div class="cb-ai-wrap">
+      <div class="cb-ai-header">
+        <div class="cb-ai-header-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="cb-ai-title">Análise com IA · Claude</div>
+        <div class="cb-ai-sub">Faça perguntas sobre seus chargebacks</div>
+        <div class="cb-ai-key-wrap">${keyStatus}</div>
+      </div>
+      <div class="cb-ai-body">
+        ${keyPanel}
+        <div class="cb-ai-messages" id="cb-msgs-${store}">${messagesHtml}</div>
+        <div class="cb-ai-actions">${quickBtns}</div>
+        <div class="cb-ai-input-row">
+          <input class="cb-ai-input" id="cb-chat-${store}" placeholder="Ex: Quais os produtos com mais chargebacks?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cbSend('${store}');}">
+          <button class="cb-ai-send" id="cb-send-${store}" onclick="cbSend('${store}')">Enviar</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function cbToggleKeyPanel(store){
+  const p=document.getElementById('cb-key-panel-'+store);
+  if(p) p.classList.toggle('open');
+}
+
+function cbSaveKey(store){
+  const input=document.getElementById('cb-key-input-'+store);
+  if(input){saveAIKey(input.value);renderCBView();cbSwitchStore(store);}
+}
+
+function cbQuick(store,text){
+  const inp=document.getElementById('cb-chat-'+store);
+  if(inp){inp.value=text;cbSend(store);}
+}
+
+async function cbSend(store){
+  const inp=document.getElementById('cb-chat-'+store);
+  const sendBtn=document.getElementById('cb-send-'+store);
+  const msg=(inp?.value||'').trim();
+  if(!msg) return;
+  const key=getAIKey();
+  if(!key){cbToggleKeyPanel(store);return;}
+  inp.value='';
+  sendBtn.disabled=true;
+
+  cbChats[store].push({role:'user',content:msg});
+  cbChats[store].push({role:'assistant',content:'Analisando…',loading:true});
+  renderCBView();cbSwitchStore(store);scrollCBChat(store);
+
+  try{
+    const rows=cbData[store];
+    const cols=rows[0]?._cols||[];
+    const sample=rows.slice(0,80);
+    const csvSample=[cols.join(','),...sample.map(r=>cols.map(c=>r[c]||'').join(','))].join('\n');
+    const total=rows.reduce((a,r)=>a+(r._amount||0),0);
+    const won=rows.filter(r=>r._status==='won').length;
+    const lost=rows.filter(r=>r._status==='lost').length;
+    const pending=rows.filter(r=>r._status==='pending').length;
+    const systemPrompt=`Você é um especialista em chargebacks e fraudes para e-commerce. Analise os dados fornecidos e responda em português do Brasil de forma clara e objetiva. Use listas e formatação simples quando útil. Seja direto e prático.
+
+Contexto da loja: ${store}
+Total de chargebacks: ${rows.length} | Valor total: ${total.toFixed(2)} | Ganhos: ${won} | Perdidos: ${lost} | Pendentes: ${pending}`;
+
+    const history=cbChats[store].filter(m=>!m.loading).slice(-10);
+    const messages=history.map(m=>({role:m.role,content:m.content}));
+    messages[messages.length-1]={role:'user',content:`${msg}\n\nDados (amostra):\n${csvSample}`};
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:1200,system:systemPrompt,messages})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'Erro API');
+    const reply=data.content[0].text;
+    cbChats[store]=cbChats[store].filter(m=>!m.loading);
+    cbChats[store].push({role:'assistant',content:reply});
+  }catch(e){
+    cbChats[store]=cbChats[store].filter(m=>!m.loading);
+    cbChats[store].push({role:'assistant',content:'⚠ Erro: '+e.message});
+  }
+  renderCBView();cbSwitchStore(store);scrollCBChat(store);
+}
+
+function scrollCBChat(store){
+  setTimeout(()=>{const el=document.getElementById('cb-msgs-'+store);if(el)el.scrollTop=el.scrollHeight;},80);
+}
+
+/* ── File parsing ── */
 function fmtAmt(val,currency){
-  if(!val&&val!==0) return '—';
+  if(!val&&val!==0)return '—';
   const sym=currency==='EUR'?'€':currency==='GBP'?'£':'$';
   return sym+val.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 }
 
-const STATUS_WORDS={won:['won','ganho','ganha','vencido','aprovado','closed_won','accepted'],
-  lost:['lost','perdido','perdida','lost_chargeback','closed_lost','denied','declined','not_received'],
-  pending:['pending','pendente','open','in_review','needs_response','under_review','warning_needs_response','charge_refunded','warning_under_review']};
-
+const STATUS_WORDS={
+  won:['won','ganho','ganha','vencido','aprovado','closed_won','accepted','representment_won'],
+  lost:['lost','perdido','perdida','lost_chargeback','closed_lost','denied','declined','not_received','representment_lost'],
+  pending:['pending','pendente','open','in_review','needs_response','under_review','warning_needs_response','charge_refunded','warning_under_review','evidence_due']
+};
 function detectStatus(val){
-  if(!val) return 'pending';
-  const v=val.toLowerCase().replace(/\s+/g,'_');
-  for(const [k,words] of Object.entries(STATUS_WORDS)) if(words.some(w=>v.includes(w))) return k;
+  if(!val)return 'pending';
+  const v=val.toLowerCase().replace(/[\s-]/g,'_');
+  for(const[k,words]of Object.entries(STATUS_WORDS))if(words.some(w=>v.includes(w)))return k;
   return 'pending';
 }
 
-const AMT_COLS=['amount','valor','montant','betrag','chargeback_amount','disputed_amount','importe','importe_disputado','total'];
-const STATUS_COLS=['status','estado','statut','status do chargeback','chargeback_status','state','reason_code','situação'];
+const AMT_COLS=['amount','valor','montant','betrag','chargeback_amount','disputed_amount','importe','total','price'];
+const STATUS_COLS=['status','estado','statut','chargeback_status','state','situação','reason_code'];
 const DATE_COLS=['date','data','fecha','datum','created','created_at','chargeback_date','opened_date'];
-const ORDER_COLS=['order','pedido','order_id','order_number','commande','bestellung','número do pedido','#order'];
+const ORDER_COLS=['order','pedido','order_id','order_number','commande','bestellung','número'];
 const REASON_COLS=['reason','motivo','raison','grund','chargeback_reason','dispute_reason'];
 const CURRENCY_COLS=['currency','moeda','devise','währung'];
 
 function matchCol(headers,candidates){
   for(const c of candidates){
-    const found=headers.find(h=>h.toLowerCase().replace(/\s+/g,'_')===c||h.toLowerCase()===c||h.toLowerCase().includes(c));
-    if(found) return found;
+    const f=headers.find(h=>{const hl=h.toLowerCase().replace(/\s+/g,'_');return hl===c||hl.includes(c);});
+    if(f)return f;
   }
   return null;
 }
 
 function parseCBFile(file,store){
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const text=e.target.result;
-    // Detect separator
-    const firstLine=text.split('\n')[0];
-    const sep=firstLine.includes('\t')?'\t':firstLine.includes(';')?';':',';
-    const lines=text.split('\n').filter(l=>l.trim());
-    if(lines.length<2){alert('Arquivo vazio ou inválido.');return;}
-    const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
-    // Map known columns
-    const amtCol=matchCol(headers,AMT_COLS);
-    const statusCol=matchCol(headers,STATUS_COLS);
-    const dateCol=matchCol(headers,DATE_COLS);
-    const orderCol=matchCol(headers,ORDER_COLS);
-    const reasonCol=matchCol(headers,REASON_COLS);
-    const currencyCol=matchCol(headers,CURRENCY_COLS);
-    // Parse rows
-    const rows=[];
-    for(let i=1;i<lines.length;i++){
-      const vals=splitCSVLine(lines[i],sep);
-      if(vals.length<2) continue;
-      const row={_cols:headers,_statusCol:statusCol};
-      headers.forEach((h,idx)=>{ row[h]=(vals[idx]||'').trim().replace(/^"|"$/g,''); });
-      // Derived
-      if(amtCol){
-        const raw=row[amtCol].replace(/[^0-9.,-]/g,'').replace(',','.');
-        row._amount=parseFloat(raw)||0;
-      }
-      if(statusCol) row._status=detectStatus(row[statusCol]);
-      else row._status='pending';
-      if(currencyCol) row._currency=row[currencyCol]||'EUR';
-      else row._currency='EUR';
-      rows.push(row);
-    }
-    cbData[store]=rows;
-    renderCBView();
-    cbSwitchStore(store);
-  };
-  reader.readAsText(file,'utf-8');
+  if(!file)return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='xls'||ext==='xlsx'){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      parseCBCSV(XLSX.utils.sheet_to_csv(ws),store);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader=new FileReader();
+    reader.onload=e=>parseCBCSV(e.target.result,store);
+    reader.readAsText(file,'utf-8');
+  }
+}
+
+function parseCBCSV(text,store){
+  const firstLine=text.split('\n')[0];
+  const sep=firstLine.includes('\t')?'\t':firstLine.split(';').length>firstLine.split(',').length?';':',';
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2){alert('Arquivo vazio ou inválido.');return;}
+  const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+  const amtCol=matchCol(headers,AMT_COLS);
+  const statusCol=matchCol(headers,STATUS_COLS);
+  const currencyCol=matchCol(headers,CURRENCY_COLS);
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=splitCSVLine(lines[i],sep);
+    if(vals.filter(v=>v.trim()).length<2)continue;
+    const row={_cols:headers,_statusCol:statusCol};
+    headers.forEach((h,idx)=>{row[h]=(vals[idx]||'').trim().replace(/^"|"$/g,'');});
+    if(amtCol){const raw=row[amtCol].replace(/[€$£\s]/g,'').replace(',','.');row._amount=parseFloat(raw)||0;}
+    row._status=statusCol?detectStatus(row[statusCol]):'pending';
+    row._currency=currencyCol?row[currencyCol]||'EUR':'EUR';
+    rows.push(row);
+  }
+  cbData[store]=rows;
+  cbChats[store]=[];
+  renderCBView();cbSwitchStore(store);
 }
 
 function splitCSVLine(line,sep){
-  if(sep!==',') return line.split(sep);
-  const result=[];let cur='';let inQ=false;
-  for(const ch of line){
-    if(ch==='"'){inQ=!inQ;}
-    else if(ch===','&&!inQ){result.push(cur);cur='';}
-    else cur+=ch;
-  }
-  result.push(cur);
-  return result;
+  if(sep!==',')return line.split(sep);
+  const r=[];let cur='';let q=false;
+  for(const ch of line){if(ch==='"')q=!q;else if(ch===','&&!q){r.push(cur);cur='';}else cur+=ch;}
+  r.push(cur);return r;
 }
 
 function clearCBData(store){
-  cbData[store]=[];
-  renderCBView();
-  cbSwitchStore(store);
+  cbData[store]=[];cbChats[store]=[];renderCBView();cbSwitchStore(store);
 }
 
 /* ── Google Auth ── */
