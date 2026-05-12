@@ -635,7 +635,23 @@
       </div>
       <div class="header-title">
         <h1>Chargebacks <span style="font-weight:500;color:var(--text2);font-size:18px">· Relatórios por loja</span></h1>
-        <p style="font-size:12.5px;color:var(--text2);margin-top:3px">Faça upload dos arquivos CSV de chargeback de cada loja</p>
+        <p style="font-size:12.5px;color:var(--text2);margin-top:3px">Faça upload dos arquivos CSV ou XLS de chargeback de cada loja</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div style="position:relative">
+        <button id="cb-global-key-btn" onclick="toggleGlobalKeyPanel()" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><path d="M11 11l5 5M14 14l3 3"/><path d="M8 11v10"/></svg>
+          <span id="cb-global-key-label">Configurar chave Gemini</span>
+        </button>
+        <div id="cb-global-key-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:18px;min-width:320px;z-index:9999">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">Chave da API Google AI (Gemini)</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input id="cb-global-key-input" type="password" placeholder="AIza..." style="flex:1;border:1.5px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12.5px;font-family:monospace;outline:none;color:var(--text)" onkeydown="if(event.key==='Enter')saveGlobalKey()">
+            <button onclick="saveGlobalKey()" style="padding:8px 14px;border-radius:7px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">Salvar</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3)">Obtenha sua chave em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a> · Salva apenas no seu navegador.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1765,7 +1781,11 @@ function switchView(view){
   $('cb-view').style.display=isDash?'none':'';
   $('lnav-dashboard').classList.toggle('active',isDash);
   $('lnav-cb').classList.toggle('active',!isDash);
-  if(!isDash) renderCBView();
+  if(!isDash){
+    renderCBView();
+    const label=document.getElementById('cb-global-key-label');
+    if(label) label.textContent=getAIKey()?'✓ Chave configurada':'Configurar chave Gemini';
+  }
 }
 
 /* ── Chargeback store tabs ── */
@@ -1858,6 +1878,31 @@ function renderCBPanel(store){
 const AI_KEY='gbl_ai_key';
 function getAIKey(){return localStorage.getItem(AI_KEY)||'';}
 function saveAIKey(k){localStorage.setItem(AI_KEY,k.trim());}
+
+function toggleGlobalKeyPanel(){
+  const panel=document.getElementById('cb-global-key-panel');
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'';
+  if(!isOpen){
+    const inp=document.getElementById('cb-global-key-input');
+    inp.value=getAIKey();
+    setTimeout(()=>inp.focus(),50);
+  }
+}
+function saveGlobalKey(){
+  const val=document.getElementById('cb-global-key-input').value.trim();
+  saveAIKey(val);
+  const label=document.getElementById('cb-global-key-label');
+  label.textContent=val?'✓ Chave configurada':'Configurar chave Gemini';
+  document.getElementById('cb-global-key-panel').style.display='none';
+  renderCBView();
+}
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('cb-global-key-panel');
+  const btn=document.getElementById('cb-global-key-btn');
+  if(panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target))
+    panel.style.display='none';
+});
 
 function renderAIPanel(store){
   const hasKey=!!getAIKey();
