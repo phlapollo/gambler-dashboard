@@ -790,118 +790,107 @@
 <script>
 /* ─── COLOSY DATA (1–17 mai 2026) ─── */
 const COLOSY_RAW=[
-  {p:'ErgoStride',   o: 120, rev:  5103.25, cog: 1984.18, fees:  305.31, g: 2973.15, fb:   73.61},
-  {p:'Klara',        o:  48, rev:  2473.22, cog:  963.72, fees:  145.54, g: 1648.30, fb:    0.00},
-  {p:'SoftLoom',     o:  43, rev:  2292.26, cog: 1145.22, fees:  135.92, g: 1030.20, fb:    0.00},
-  {p:'SpineAlign',   o:  54, rev:  2121.96, cog:  534.58, fees:  130.04, g:    0.00, fb:    0.00},
-  {p:'OrthoCare',    o:  46, rev:  2116.90, cog:  863.23, fees:  125.65, g: 1123.50, fb:  444.26},
-  {p:'OrthoSandal',  o:  29, rev:  1069.32, cog:  298.01, fees:   64.02, g:  827.15, fb:    0.00},
-  {p:'Lissora',      o:  16, rev:   754.12, cog:  402.83, fees:   44.82, g:  260.36, fb:    0.00},
-  {p:'Z90 Pro',      o:   4, rev:   399.96, cog:  279.04, fees:   22.64, g:  376.70, fb:    0.00},
-  {p:'Rawik',        o:   7, rev:   351.20, cog:  160.64, fees:   20.61, g:  169.96, fb:    0.00},
-  {p:'Barton',       o:   4, rev:   276.95, cog:  214.85, fees:   15.98, g:   89.70, fb:    0.00},
-  {p:'Held Cargo',   o:   6, rev:   263.35, cog:  123.44, fees:   15.55, g:    0.00, fb:    0.00},
-  {p:'CareStride',   o:  10, rev:   239.40, cog:   75.02, fees:   14.46, g:  349.84, fb:    0.00},
-  {p:'Urban',        o:   3, rev:   163.60, cog:  103.70, fees:    7.04, g:    0.00, fb:    0.00},
-  {p:'OrthoRelief',  o:   2, rev:   113.72, cog:   49.74, fees:    6.66, g:  130.07, fb:    0.00},
-  {p:'Graven',       o:   2, rev:   109.90, cog:   36.77, fees:    6.46, g:  127.17, fb:    0.00},
-  {p:'FlexRelief',   o:   2, rev:    79.80, cog:   32.60, fees:    4.82, g:    0.00, fb:    0.00},
-  {p:'LeatherSandal',o:   2, rev:    75.81, cog:   28.14, fees:    4.61, g:    0.00, fb:    0.00},
-  {p:'StrideX',      o:   1, rev:    59.90, cog:   19.55, fees:    3.49, g:   75.56, fb:    0.00},
-  {p:'Soft Hood',    o:   2, rev:    39.90, cog:   10.89, fees:    2.41, g:   41.07, fb:    0.00},
-  {p:'OrthoBalance', o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    1.66, fb:    0.00},
-  {p:'Norway',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.21, fb:    0.00},
-  {p:'NordTherm',    o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    0.05, fb:    0.00},
-  {p:'Bravon',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    7.89, fb:    0.00},
-  {p:'Salkin',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    3.09, fb:    0.00},
-  {p:'Nordex',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.40, fb:    0.00},
-  {p:'Santous',      o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   10.83, fb:    0.00},
-  {p:'__unknown__',  o:   6, rev:   222.79, cog:  107.17, fees:   13.24, g: 1807.51, fb:    0.00},
+  {p:'ErgoStride',   o: 116, rev:  5023.45, cog: 1636.84, fees:  300.73, g: 2973.15},
+  {p:'Klara',        o:  47, rev:  2511.13, cog:  638.96, fees:  147.67, g: 1648.30},
+  {p:'SoftLoom',     o:  39, rev:  2252.36, cog:  647.66, fees:  131.67, g: 1030.20},
+  {p:'SpineAlign',   o:  53, rev:  2087.06, cog:  417.00, fees:  126.29, g: 1535.58},
+  {p:'OrthoCare',    o:  43, rev:  2001.00, cog:  583.96, fees:  119.09, g: 1123.50},
+  {p:'OrthoSandal',  o:  25, rev:  1109.22, cog:  267.07, fees:   66.31, g:  827.15},
+  {p:'Lissora',      o:  16, rev:   754.12, cog:  159.20, fees:   44.82, g:  260.36},
+  {p:'Rawik',        o:   7, rev:   476.90, cog:  103.88, fees:   27.55, g:  169.96},
+  {p:'Z90 Pro',      o:   4, rev:   399.96, cog:  139.52, fees:   22.64, g:  376.70},
+  {p:'Barton',       o:   4, rev:   276.95, cog:  110.07, fees:   15.98, g:   89.70},
+  {p:'Held Cargo',   o:   5, rev:   221.45, cog:   63.42, fees:   13.24, g:    0.00},
+  {p:'CareStride',   o:   5, rev:   199.50, cog:   62.47, fees:   12.05, g:  349.84},
+  {p:'Graven',       o:   2, rev:   109.90, cog:   36.77, fees:    6.46, g:  127.17},
+  {p:'Urban',        o:   2, rev:    79.80, cog:   22.50, fees:    2.41, g:   18.03},
+  {p:'FlexRelief',   o:   2, rev:    79.80, cog:   32.60, fees:    4.82, g:    0.00},
+  {p:'LeatherSandal',o:   2, rev:    75.81, cog:   28.14, fees:    4.61, g:    0.00},
+  {p:'Soft Hood',    o:   1, rev:    39.90, cog:   10.89, fees:    2.41, g:   41.07},
+  {p:'OrthoRelief',  o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:  130.07},
+  {p:'StrideX',      o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   75.56},
+  {p:'Santous',      o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   10.83},
+  {p:'Richard',      o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   10.40},
+  {p:'Bravon',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    7.89},
+  {p:'Salkin',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    3.09},
+  {p:'Nordex',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.40},
+  {p:'Norway',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.21},
+  {p:'Peaky',        o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    1.95},
+  {p:'OrthoBalance', o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    1.66},
+  {p:'NordTherm',    o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    0.05},
+  {p:'__unknown__',  o:   6, rev:   340.68, cog:   96.25, fees:   19.96, g:  241.55},
 ];
-const COLOSY_CFG={name:'Colosy',letter:'C',fx:0.8555,revEur:18327.31,googleUsd:11058.37,fbUsd:517.87,hasFb:true,orders:404,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17,
-  unknownDetail:[
-    {name:'NVS',g:65.49},{name:'LISSORA',g:21.51},{name:'FRIO',g:12.11},
-    {name:'SYNCPACK',g:7.65},{name:'CALÇAVELTRIX',g:7.63},{name:'RICHARD',g:4.38},{name:'CALÇAJONAS',g:4.13},
-    {name:'ZOE',g:2.78},{name:'PEAKY',g:1.42},{name:'BOOSTBODY',g:0.50},{name:'WIECEL',g:0.48},
-    {name:'ERGONOVA',g:0.42},{name:'CORRETOR',g:0.18},{name:'SAFE',g:0.08},{name:'SCALIX',g:0.07},
-    {name:'SOLENE',g:0.05},{name:'CAHRLOT',g:0.04},{name:'LALUNA',g:0.03},{name:'NUVIA',g:0.02},
-    {name:'ELYSE',g:0.02},{name:'NORDICDREAM',g:0.02},{name:'BRAXEN',g:0.02},{name:'BRENTON',g:0.01},
-    {name:'ARTIC',g:0.01},{name:'NUVVO',g:0.01}
-  ]};
+const COLOSY_CFG={name:'Colosy',letter:'C',fx:0.8555,revEur:18038.99,googleUsd:11058.37,fbUsd:0,hasFb:false,orders:379,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
 
 /* ─── RENAZI DATA (1–17 mai 2026) ─── */
 const RENAZI_RAW=[
-  {p:'ErgoStride',    o:  91, rev:  3463.32, cog: 1226.25, fees:  208.25, g: 2162.88},
-  {p:'Klara',         o:  30, rev:  1456.35, cog:  508.68, fees:   86.35, g:  993.62},
-  {p:'StrideX',       o:  17, rev:  1018.30, cog:  365.27, fees:   59.08, g:  524.73},
-  {p:'Rawik',         o:  18, rev:   772.54, cog:  408.95, fees:   42.82, g:  389.27},
-  {p:'SoftLoom',      o:  14, rev:   658.35, cog:  369.53, fees:   38.26, g:  412.78},
-  {p:'LeatherSandal', o:  11, rev:   399.00, cog:  141.21, fees:   24.10, g:  343.22},
+  {p:'ErgoStride',    o:  88, rev:  3622.92, cog: 1119.80, fees:  217.89, g: 2162.88},
+  {p:'Klara',         o:  30, rev:  1456.35, cog:  377.13, fees:   86.35, g:  993.62},
+  {p:'StrideX',       o:  17, rev:  1078.20, cog:  328.75, fees:   62.57, g:  524.73},
+  {p:'Rawik',         o:  15, rev:   768.55, cog:  180.12, fees:   40.32, g:  389.27},
+  {p:'SoftLoom',      o:  13, rev:   738.15, cog:  180.27, fees:   43.21, g:  412.78},
+  {p:'LeatherSandal', o:  11, rev:   438.90, cog:  141.21, fees:   26.51, g:  343.22},
+  {p:'Barton',        o:   2, rev:   129.72, cog:   19.13, fees:    7.53, g:   22.31},
   {p:'Peaky',         o:   1, rev:    79.90, cog:   28.07, fees:    4.57, g:    7.30},
+  {p:'Vellura',       o:   2, rev:    79.80, cog:   10.98, fees:    4.82, g:   46.56},
   {p:'Soft Hood',     o:   2, rev:    79.80, cog:   21.66, fees:    2.41, g:    0.00},
   {p:'OrthoCare',     o:   2, rev:    75.81, cog:   23.60, fees:    4.61, g:   39.02},
   {p:'Richard',       o:   1, rev:    59.90, cog:   20.46, fees:    3.49, g:    0.00},
+  {p:'Vogadeck',      o:   1, rev:    59.90, cog:    0.00, fees:    3.49, g:   23.06},
   {p:'Beaufort',      o:   1, rev:    49.90, cog:   13.50, fees:    0.00, g:    0.00},
-  {p:'Barton',        o:   3, rev:    39.92, cog:   19.13, fees:    2.42, g:   22.31},
-  {p:'Santous',       o:   1, rev:    39.90, cog:    9.35, fees:    2.41, g:   29.47},
-  {p:'Vellura',       o:   2, rev:    39.90, cog:   10.98, fees:    2.41, g:   46.56},
+  {p:'OrthoBalance',  o:   1, rev:    49.90, cog:    0.00, fees:    0.00, g:    0.00},
   {p:'Held Cargo',    o:   1, rev:    39.90, cog:   10.88, fees:    2.41, g:    0.00},
+  {p:'Santous',       o:   1, rev:    39.90, cog:    9.35, fees:    2.41, g:   29.47},
   {p:'Urban',         o:   1, rev:    38.17, cog:   10.63, fees:    2.32, g:    0.00},
-  {p:'SpineAlign',    o:   1, rev:    34.90, cog:    7.22, fees:    2.14, g:    0.00},
-  {p:'OrthoRelief',   o:   1, rev:     0.00, cog:    0.00, fees:    0.00, g:   29.78},
-  {p:'Vogadeck',      o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   23.06},
+  {p:'SpineAlign',    o:   1, rev:    34.90, cog:    7.22, fees:    2.14, g:  129.90},
+  {p:'OrthoRelief',   o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   29.78},
   {p:'Nordex',        o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   11.45},
   {p:'Norway',        o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    6.80},
   {p:'FjordWarm',     o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    1.08},
-  {p:'__unknown__',   o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:  143.75},
+  {p:'Salkin',        o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    0.01},
+  {p:'__unknown__',   o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   13.84},
 ];
-const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:8345.86,googleUsd:5187.08,fbUsd:0,hasFb:false,orders:199,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17,
-  unknownDetail:[
-    {name:'FINTS',g:4.81},{name:'PEAKY',g:2.88},{name:'FRIO',g:1.53},{name:'RAVELLO',g:0.01}
-  ]};
+const RENAZI_CFG={name:'Renazi',letter:'R',fx:0.8555,revEur:8920.57,googleUsd:5187.08,fbUsd:0,hasFb:false,orders:191,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
 
 /* ─── MODELINE DATA (1–17 mai 2026) ─── */
 const MODELINE_RAW=[
-  {p:'Air Modeline', o: 213, rev:  7876.15, cog: 3809.18, fees:  493.64, g: 3382.40, fb:  353.43},
-  {p:'OrthoMoc',     o: 154, rev:  5481.38, cog: 2614.79, fees:  352.56, g: 3751.62, fb:   18.27},
-  {p:'ErgoStride',   o: 121, rev:  4764.33, cog: 2563.48, fees:  303.35, g: 2606.05, fb:  182.26},
-  {p:'Klara',        o:  72, rev:  3174.66, cog: 1283.37, fees:  198.16, g:  932.18, fb:    1.64},
-  {p:'OrthoCare',    o:  78, rev:  2375.41, cog: 1113.42, fees:  148.28, g:  551.43, fb: 1904.36},
-  {p:'OrthoSandal',  o:  28, rev:  1211.91, cog:  398.38, fees:   79.59, g:  953.51, fb:    0.00},
-  {p:'Barton',       o:  25, rev:  1180.59, cog:  723.62, fees:   72.19, g:  638.67, fb:  141.40},
-  {p:'Pheron',       o:   4, rev:   159.60, cog:   57.31, fees:   10.12, g:  245.67, fb:    0.00},
-  {p:'Vellura',      o:   6, rev:   194.36, cog:   71.71, fees:   12.12, g:  208.68, fb:    0.00},
-  {p:'SpineAlign',   o:   2, rev:    62.82, cog:   25.28, fees:    4.10, g:    0.00, fb:    0.00},
-  {p:'Norway',       o:   1, rev:    53.91, cog:   22.09, fees:    0.00, g:    0.00, fb:    0.00},
-  {p:'Salkin',       o:   1, rev:    44.91, cog:   34.14, fees:    2.69, g:    0.00, fb:    0.00},
-  {p:'Nordex',       o:   2, rev:    59.90, cog:   16.65, fees:    3.67, g:    0.00, fb:    0.00},
-  {p:'Sandales Cuir',o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    0.00, fb:    0.00},
-  {p:'FjordWarm',    o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    0.00, fb:   49.37},
-  {p:'Rawik',        o:   1, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.74, fb:    0.00},
-  {p:'__unknown__',  o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g: 1725.40, fb:    0.00},
+  {p:'Air Modeline',  o: 159, rev:  7397.61, cog: 2213.85, fees:  462.54, g: 3382.40},
+  {p:'OrthoMoc',      o: 140, rev:  6296.64, cog: 1562.80, fees:  394.69, g: 3751.62},
+  {p:'ErgoStride',    o: 103, rev:  4675.31, cog: 1705.41, fees:  292.97, g: 2606.05},
+  {p:'Klara',         o:  68, rev:  3554.33, cog:  774.04, fees:  220.14, g:  932.18},
+  {p:'OrthoCare',     o:  69, rev:  3337.69, cog:  758.07, fees:  207.96, g:  560.48},
+  {p:'Barton',        o:  23, rev:  1417.64, cog:  450.35, fees:   86.74, g:  638.67},
+  {p:'OrthoSandal',   o:  25, rev:  1058.96, cog:  246.87, fees:   66.77, g:  953.51},
+  {p:'LeatherSandal', o:  20, rev:   848.72, cog:  260.94, fees:   53.54, g:  612.03},
+  {p:'CareStride',    o:  10, rev:   484.03, cog:  158.10, fees:   30.16, g:  351.85},
+  {p:'Vellura',       o:   6, rev:   360.06, cog:   54.38, fees:   22.08, g:  208.68},
+  {p:'Pheron',        o:   4, rev:   159.60, cog:   57.31, fees:   10.12, g:  245.67},
+  {p:'SpineAlign',    o:   2, rev:    62.82, cog:   25.28, fees:    4.10, g:   78.01},
+  {p:'Nordex',        o:   1, rev:    59.90, cog:   16.65, fees:    3.67, g:    0.00},
+  {p:'Norway',        o:   1, rev:    53.91, cog:   22.09, fees:    0.00, g:    0.00},
+  {p:'Rawik',         o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    2.74},
+  {p:'__unknown__',   o:  15, rev:   774.41, cog:  253.84, fees:   45.54, g:  674.46},
 ];
-const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:26715.75,googleUsd:14998.35,fbUsd:2909.23,hasFb:true,orders:705,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17,
-  unknownDetail:[
-    {name:'ERGOMOC',g:115.85},{name:'PHERON',g:30.66},{name:'FRIO',g:14.75}
-  ]};
+const MODELINE_CFG={name:'Modeline',letter:'M',fx:0.8555,revEur:30541.63,googleUsd:14998.35,fbUsd:0,hasFb:false,orders:646,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
 
 /* ─── ZENDA DATA (1–17 mai 2026) ─── */
 const ZENDA_RAW=[
-  {p:'OrthoMoc',    o:  88, rev:  3799.20, cog: 1451.87, fees:  235.27, g:  995.60},
+  {p:'OrthoMoc',    o:  85, rev:  3799.20, cog: 1200.88, fees:  235.27, g:  994.19},
   {p:'ErgoStride',  o:  23, rev:   987.80, cog:  353.30, fees:   63.14, g:  346.32},
   {p:'OrthoSandal', o:   2, rev:    79.80, cog:   19.90, fees:    5.20, g:   24.89},
+  {p:'Rawik',       o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:    1.41},
 ];
-const ZENDA_CFG={name:'Zenda',letter:'Z',fx:0.8555,revEur:4866.80,googleUsd:1366.81,fbUsd:0,hasFb:false,orders:113,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
+const ZENDA_CFG={name:'Zenda',letter:'Z',fx:0.8555,revEur:4866.80,googleUsd:1366.81,fbUsd:0,hasFb:false,orders:110,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
 
 /* ─── VEZZO DATA (1–17 mai 2026) ─── */
 const VEZZO_RAW=[
-  {p:'Klara',       o:  36, rev:  1620.29, cog:  567.75, fees:  100.85, g: 1102.52},
-  {p:'ErgoStride',  o:  13, rev:   563.45, cog:  257.24, fees:   35.45, g:  418.49},
-  {p:'Vezzo',       o:  10, rev:   239.40, cog:  103.64, fees:   14.93, g:  673.66},
+  {p:'Klara',       o:  33, rev:  1620.29, cog:  420.82, fees:  100.85, g: 1102.52},
+  {p:'ErgoStride',  o:  13, rev:   563.45, cog:  223.89, fees:   35.45, g:  418.49},
+  {p:'Vezzo',       o:  10, rev:   440.44, cog:   78.17, fees:   27.67, g:  673.66},
   {p:'OrthoSandal', o:   3, rev:   119.70, cog:   27.25, fees:    7.59, g:  149.06},
   {p:'OrthoMoc',    o:   0, rev:     0.00, cog:    0.00, fees:    0.00, g:   62.24},
 ];
-const VEZZO_CFG={name:'Vezzo',letter:'V',fx:0.8555,revEur:2542.84,googleUsd:2405.97,fbUsd:0,hasFb:false,orders:62,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
+const VEZZO_CFG={name:'Vezzo',letter:'V',fx:0.8555,revEur:2743.88,googleUsd:2405.97,fbUsd:0,hasFb:false,orders:59,period:'1–17 mai 2026',periodStart:new Date(2026,4,1),periodEnd:new Date(2026,4,17),totalDays:17};
 
 /* ─── KAYSE DATA ─── */
 // Orders: 1 jan–30 abr 2026 · paid + fulfilled + hasCost · COGS = cog + shipping · Fees = transaction_fee + taxes
